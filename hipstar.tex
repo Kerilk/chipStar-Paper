@@ -24,6 +24,7 @@
 { \newcommand{\mynote}[3]{}
   \newcommand{\newtext}[1]{#1}}
 
+% Please use a named note with this macro to comment the text:
 \newcommand{\pj}[1]{ \mynote{PJ}{#1}{blue} }
 \newcommand{\bv}[1]{ \mynote{BV}{#1}{green} }
 
@@ -32,20 +33,20 @@
 
 \begin{document}
 
-\title{hipstar: Enabling HIP and CUDA on an Open Cross-Vendor Standard Software Stack}
+\title{hipstar: Enabling HIP On an Open Cross-Vendor Standard Software Stack}
 
 %\author{pekka.jaaskelainen }
 %\date{March 2023}
 
-\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Brice Videau, Colleen Bertoni, Kevin Harms, Paulius Velesko, Phil $?$, Rahul $?$, Jisheng Zhao, Jeffrey $?$, Vivek $?$...,
+\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Brice Videau, Colleen Bertoni, Kevin Harms, Paulius Velesko, Philip Roth, Rahulkumar Gaytri, Jisheng Zhao
         % <-this % stops a space
 \thanks{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu and Sarbojit Sarkar are with Intel Corporation. \textit{Corresponding author: Pekka Jääskeläinen, email: pekka.jaaskelainen@intel.com}.}
 \thanks{Pekka Jääskeläinen is also with Tampere University, Finland. }
 \thanks{Paulius Velesko is with Pagan LC.}
 \thanks{Brice Videau, Colleen Bertoni and Kevin Harms are with Argonne National Laboratory, ...}
-\thanks{Phil X is with Oak Ridge National Laboratory, ... }
-\thanks{Rahul Y is with National Energy Research Scientific Computing Center.}
-\thanks{Jisheng Zhao, Jeffrey $?$ and Vivek $?$ are with Georgia Institute of Technology Atlanta, Georgia.}
+\thanks{Philip Roth is with Oak Ridge National Laboratory, ... }
+\thanks{Rahulkumar Gaytri is with National Energy Research Scientific Computing Center, ...}
+\thanks{Jisheng Zhao is with Georgia Institute of Technology, Atlanta, Georgia.}
 \thanks{\pj{The authors are not in any particular order. I put myself as 1st author as I'm leading the writing, and then I ordered the co-authors according to their affil.}}
 %\thanks{This paper was produced by the IEEE Publication Technology Group. They are in Piscataway, NJ.}% <-this % stops a space
 %\thanks{Manuscript received April 19, 2021; revised August 16, 2021.}}
@@ -72,7 +73,8 @@
 
 %This document describes the most common article elements and how to use the IEEEtran class with \LaTeX \ to produce files that are suitable for submission to the IEEE.  IEEEtran can produce conference, journal, and technical note (correspondence) papers with a suitable choice of class options. 
 
-Due to NVIDIA dominating the GPU market, despite its lack of cross-vendor portability, the C/C++-based application programming interface of CUDA and its related key libraries are still used in a significant fraction of software utilizing GPU-based acceleration. AMD's ROCm and its Heterogeneous-compute Interface for Portability (HIP) aims to alleviate the CUDA's lack of portability by providing a route out from the NVIDIA CUDA platform to AMD's devices.
+\pj{This first paragraph is optional, we can remove it:}
+Due to NVIDIA dominating the GPU market and despite its lack of cross-vendor portability, the C/C++-based application programming interface of CUDA and its related key libraries are still used in a significant fraction of software utilizing GPU-based acceleration. AMD's ROCm and its Heterogeneous-compute Interface for Portability (HIP) aims to alleviate the CUDA's lack of portability by providing a route out from the NVIDIA CUDA platform to AMD's devices.
   
 In this article we describe \textit{hipstar}, an open source software platform which allows running CUDA and HIP programs on a open cross-vendor  standard based software platform based on OpenCL, {SPIR-V}, and a carefully crafted set of standard extensions. The solution is usually ``drop-in'', meaning no application modifications are typically required. We discuss the relevant technical aspects of \textit{hipstar} related to the feature mismatches between CUDA/HIP and OpenCL and exemplify its runtime overheads in comparison to executing CUDA/HIP applications directly with NVIDIA's CUDA software platform. The measurements show that the overheads induced by \textit{hipstar} are typically only in the order of N-M\%, thus negligible.\pj{TODO} Although being a relatively young code base, \textit{hipstar} is now considered mature enough for production use, as demonstrated by multiple application porting case studies performed for the Aurora supercomputer.
 
@@ -90,23 +92,34 @@ CUDA, HIP, OpenCL, SPIR-V, Portability, Shared Virtual Memory
 
 For the end-users and other hardware vendors, naturally, the situation of a single-vendor dominating API is not optimal. End-users benefit from open standard software interfaces that enable switching the hardware without incurring significant non-recurring engineering costs required for porting all the legacy applications and libraries to a new software platform just to be able to utilize the purchased hardware optimally. Similarly, other hardware vendors aiming to get their piece of the market pie, would prefer an API that is not dictated by a single vendor.
 
-AMD's ROCm~\cite{ROCm} software platform and its Heterogeneous-compute Interface for Portability (HIP) language~\cite{HIP} helps escaping the CUDA walled garden by providing a route out from the NVIDIA CUDA platform to AMD's devices. HIP defines a subset of CUDA that is more easily portable to various hardware, thanks mainly to omitting various advanced features available in the later CUDA versions (some of these features are discussed in Section~\ref{subsection:compatgaps}). In order to enable easy automated path from CUDA applications, HIP is largely a copy of a CUDA C/C++ subset with a few minor differences, and renamed function names. It alleviates the CUDA portability problem, but doesn't solve it satisfactorily due to AMD targeting primarily their self-specified low level ROCm APIs which have not been so far ported to other than AMD platforms. An open source CUDA/HIP software platform solely based on open standards with the sincere aim for cross-vendor portability is still lacking.
+AMD's ROCm~\cite{ROCm} software platform and its Heterogeneous-compute Interface for Portability (HIP) language~\cite{HIP} helps escaping the CUDA walled garden by providing a route out from the NVIDIA CUDA platform to AMD's devices. HIP defines a subset of CUDA that is more easily portable to various hardware, thanks mainly to omitting various advanced features available in the later CUDA versions (some of these features are discussed in Section~\ref{subsection:compatgaps}). In order to enable easy automated path from CUDA applications, HIP is largely a copy of a CUDA C/C++ subset with a few minor differences, and renamed function names. It alleviates the CUDA portability problem, but doesn't solve it satisfactorily due to AMD targeting primarily their self-specified low level ROCm APIs which have not been so far ported to other than AMD platforms. An open source CUDA/HIP software platform solely based on open standards with a sincere aim for cross-vendor portability is still lacking.
 
 In this article we propose a complete open source software platform that enables porting applications from NVIDIA-driven CUDA and AMD-driven ROCm platforms to any platform supporting the cross-vendor open standards OpenCL and SPIR-V. We evaluate the portability aspects on platforms with proprietary drivers, and as a further contribution, extend an open source OpenCL implementation to expand the scope to further device types. In comparison to the previous solutions, our proposed platform enables usually source-modification-free compilation of HIP programs along with supporting the necessary library dependencies for the most essential CUDA/ROCm APIs. 
 
-The rest of the article is organized as follows: Section~\ref{section:relatedWork} overviews the related work to the proposed software platform and its components. Section~\ref{section:runtime} discusses the technical challenges related to the runtime execution. Section~\ref{section:compilation} describes the most relevant parts of the compiler support. Section~\ref{section:libraries} identifies the most important libraries that must be supported for compatibility, and how they are supported in the proposed software platform. Section~\ref{section:expandingCompat} shows how we expanded the platform support using open source tooling. The aspects related to directly supporting CUDA programs instead of converting them first to HIP are discussed in Section~\ref{section:directCUDA}. Debugging and profiling support is outlined in \ref{section:debuggingAndProfiling}. Next we describe how the software platform portability was tested (Section~\ref{section:platformPortability}), source code portability validated (Section~\ref{section:applications}) and performance evaluated (Section~\ref{section:applications}). Finally, conclusions and future work plans are presented in~\ref{section:conclusions}.
+The rest of the article is organized as follows: Section~\ref{section:relatedWork} overviews the related work to the proposed software platform and its components. Section~\ref{section:runtime} discusses the technical challenges related to the runtime execution. Section~\ref{section:compilation} describes the most relevant parts of the compiler support. Section~\ref{section:libraries} identifies the most important libraries that must be supported for compatibility, and how they are supported in the proposed software platform. Section~\ref{section:expandingCompat} shows how we expanded the platform support using open source tooling. The aspects related to directly supporting CUDA programs instead of converting them first to HIP are discussed in Section~\ref{section:directCUDA}. Debugging and profiling support is outlined in Section~\ref{section:debuggingAndProfiling}. Then we describe how the software platform portability was tested (Section~\ref{section:platformPortability}), source code portability validated (Section~\ref{section:applications}) and performance evaluated (Section~\ref{section:applications}). Finally, conclusions and future work plans are presented in~\ref{section:conclusions}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Related Work}
 \label{section:relatedWork}
 
-\textit{Hipstar} is based on HIPCL~\cite{HIPCL}. Thus, HIPCL is naturally its closest relative in terms of technical aspects. \textit{Hipstar} is a result of an almost a complete rewrite of the HIPCL code base and maturing it over approximately three years of work while implementing and testing various missing essential features such as warp level primitives. This article is an greatly expands upon the original poster abstract that originally introduced the early-prototype-stage HIPCL. 
+\textit{Hipstar} is based on HIPCL~\cite{HIPCL}. It is a result of an almost a complete rewrite of the HIPCL code base and maturing it over approximately three years of work in collaboration with multiple partners and users. Various missing essential features have been implemented since the initial work. This article significantly expands upon the original poster abstract that introduced the early-prototype-stage HIPCL. 
 
-Before \textit{hipstar}, there was also an experimental conversion of the HIPCL code base to utilize Intel's Level Zero~\cite{LevelZero} low level API called HIPLZ~\cite{HIPLZ} directly. Both HIPCL and HIPLZ were merged to the same code base now called \textit{hipstar} with the direct Level Zero access provided as an additional backend for comparison purposes. Currently the recommended path from CUDA/HIP to Level Zero goes through OpenCL and PoCL's~\cite{PoCL} Level Zero driver.
+Before \textit{hipstar}, there was also an experimental port of the HIPCL code base to utilize Intel's Level Zero~\cite{LevelZeroAPI} low level API directly. Both the OpenCL backend of HIPCL and the Level Zero backend were merged to the same code base which is now called \textit{hipstar}. The direct Level Zero access is used as an additional backend for comparison purposes. However, currently the recommended path from CUDA/HIP to Level Zero goes through the OpenCL backend and PoCL's~\cite{PoCL} Level Zero driver since the OpenCL path is more mature and robust.
 
-We divide the other related work discussion to the following three areas: 1) Software platforms which aim to extend the portability of CUDA and/or HIP applications. The essential components in these projects are 2) the internal device program representation that provides a virtual instruction-set abstraction to cover a set of real instruction-sets, in order to enable portability of the kernel programs to various heterogeneous devices, and, 3) portability layer APIs, that hide the runtime aspects of different systems to an abstraction layer. We discuss the relevant work within these aspects in the following subsections.
+We divide the rest of the related work discussion to the following three areas: 1) Software platforms which aim to extend the portability of CUDA and/or HIP applications and to the essential components in this type of software platforms, which are 2) the internal device program representation that provides a virtual instruction-set abstraction to cover a set of real instruction-sets, in order to enable portability of the kernel programs to various heterogeneous devices, and, 3) portability layer APIs, that hide the runtime aspects of different systems to an abstraction layer. We discuss the relevant work within these aspects in the following subsections.
 
+\subsection{Software Platforms for CUDA Support}
+
+\pj{TODO: ZLUDA} 
+\pj{TODO: SYCLomatic} 
+\pj{TODO: HIPCL}
+\pj{TODO: HIPLZ}
+\pj{TODO: CUDA, ROCm}
+\pj{TODO: MCUDA}
+\pj{TODO: Swan}
+\pj{TODO: Coriander}
+\pj{TODO: CU2CL}
 
 %MCUDA
 %– broaden the applicability of a previously accelerator-specific
@@ -122,22 +135,10 @@ We divide the other related work discussion to the following three areas: 1) Sof
 %– a source-to-source translator built upon the Clang compiler for
 %converting a CUDA program to an OpenCL program
 
-\subsection{Software Platforms for CUDA Support}
-
-\pj{TODO: ZLUDA} 
-\pj{TODO: SYCLomatic} 
-\pj{TODO: HIPCL}
-\pj{TODO: HIPLZ}
-\pj{TODO: CUDA, ROCm}
-\pj{TODO: MCUDA}
-\pj{TODO: Swan}
-\pj{TODO: Coriander}
-\pj{TODO: CU2CL}
-
 \subsection{Device Program Representations} 
 
 ... \pj{TODO: 
-Compare to the IWOCL 2023 paper which proposed LLVM IR as the IR.}
+Compare to the IWOCL 2023 paper which proposed LLVM IR as the IR (after it's published).}
 \pj{TODO: Compare to Java bytecode.}\pj{TODO: SPIR 1.2}
 
 \subsection{Portability Layers} 
@@ -153,33 +154,48 @@ Compare to the IWOCL 2023 paper which proposed LLVM IR as the IR.}
 
 \pj{TODO: aspects related to runtime, how to make it portable, mapping to OpenCL}
 
-Related to memory management, a requirement \textit{hipstar} places for the supported OpenCL platforms is coarse grained Shared Virtual Memory: Unlike OpenCL, CUDA and HIP support device pointers embedded into other data structures in host memory. Implementation of this feature requires either tracking pointers and updating them before sending data to GPU, which is complex, error-prone, and in the general case impossible to perform at compile time in a watertight manner. Thus, \textit{hipstar} requires a shared virtual address space across the host and the device(s).\pj{TODO: OpenCL 3.0 requires coarse grained SVM of the minimal implementation, should we state it here clearly?}
+\subsection{Memory Management}
 
-\pj{Michal TODO (?): Describe how memory management up to certain CUDA versions works with Coarse Grained SVM only. Discuss which SVM versions or USM versions would be required for the higher levels.}
+CUDA and HIP support device pointers embedded into other data structures in host memory.\pj{TODO: Expand this aspect. What type of host-device memory management is supported in hipstar and which CUDA version, unified shared memory etc. is not.} Implementation of this feature without a shared address space requires either tracking the device pointers and updating them before sending data to GPU, which is complex, error-prone, and in the general case impossible to perform at compile time in a watertight manner. Therefore, \textit{hipstar} requires a shared virtual address space across the host and the device(s).
 
-%TO SAVE SPACE:
-%Additionally, the CUDA/HIP event API does not directly map to the OpenCL event API, since in CUDA/HIP the user is responsible for creating and recording events, while in OpenCL the implementation creates and records events when queuing commands.
+\pj{TODO: OpenCL 3.0 requires coarse grained SVM of the minimal implementation, should we state it here clearly?}
 
+Related to memory management, a requirement \textit{hipstar} places for the supported OpenCL platforms is coarse grained Shared Virtual Memory.
+\pj{Michal (?) TODO: Describe how we use it. When we do unmap/map? Before and after kernel launch?}
 
-\subsection{Lower Layer Interoperability}
+\pj{We should fix \url{https://github.com/CHIP-SPV/chip-spv/issues/211} and document it here ;)}
+
+\subsection{Task Synchronization}
+
+...
+The CUDA/HIP event API does not directly map to the OpenCL event API, since in CUDA/HIP the user is responsible for creating and recording events, while in OpenCL the implementation creates and records events when queuing commands. ... \pj{Michal (?) TO expand}
+
+\subsection{Lower Layer API Interoperability}
 
 \pj{TODO Michal, Brice (?): Describe the HIP-OpenCL and HIP-SYCL interoperability APIs and their use cases.}
 
 
-\subsection{OpenCL-CUDA/HIP Compatibility Gaps}
+%\subsection{OpenCL-CUDA/HIP Compatibility Gaps}
 
-\pj{Pekka TODO: This is a verbatim copy from HIPCL, to update:}
-Most of the HIP API maps trivially to the OpenCL API, with some notable exceptions which might call for new OpenCL extensions:
+%\pj{Pekka TODO: This is a verbatim copy from HIPCL, to update:}
+%Most of the HIP API maps trivially to the OpenCL API, with some notable exceptions which might call for new OpenCL extensions:\pj{TODO: We should just make them extensions (proposals) to clean up the story.}
 
-\begin{itemize}
+%\begin{itemize}
 
-\item {hipGetDeviceProperties()}: for certain device properties, there is no portable way to get the information via the OpenCL device query API.
+%\item {hipGetDeviceProperties()}: for certain device properties, there is no portable way to get the information via the OpenCL device query API.\pj{this should be an easy extension}
 
-\item {hipSetDeviceFlags()}: the flags to this call control how the host thread interacts with the driver thread while waiting for the device (yield the host thread to OS, or spin wait). hipEventCreateWithFlags() provides per-event control of the synchronize behaviour (yield thread/spin wait). However, these APIs affect only performance, not correctness, thus can be implemented as no-operations.
+% Pekka> I think we can do without this as it's visible only in terms
+% of latency/performance to the user, and there should be also other
+% similar features which can be observed only in terms of perf., not
+% functional correctness (e.g. the typical concurrency to parallelism mapping).
+%\item {hipSetDeviceFlags()}: the flags to this call control how the host thread interacts with the driver thread while waiting for the device (yield the host thread to OS, or spin wait). 
+%
+%\item{hipEventCreateWithFlags()}: provides per-event control of the synchronize behaviour (yield thread/spin wait). However, these APIs affect only performance, not correctness, thus can be implemented as no-operations.
 
-\item {hipModuleLaunchKernel()}: passing args by ``extra'' parameter requires an API for setting all kernel arguments at once.
+% Pekka> Cannot we really implement this without an extension even if we had kernel metadata to traverse?
+%\item {hipModuleLaunchKernel()}: passing args by ``extra'' parameter requires an API for setting all kernel arguments at once.\pj{a new clEnqueueNDRange variation with a HSA-style-specified exact layout argument buffer layout might be useful in any case.}
 
-\end{itemize}
+%\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -193,18 +209,28 @@ Most of the HIP API maps trivially to the OpenCL API, with some notable exceptio
 
 A major design decision for \textit{hipstar} was to choose a \textit{portable} kernel program \textit{Intermediate Representation (IR)} format that is supported by multiple OpenCL implementations and that also has solid open source infrastructure available. While the main program of a heterogeneous application is typically compiled to a native instruction-set binary of a selected host CPU, using an IR target and ``online compilation'' for the device programs enables portability of the application binary across a diversity of co-processors. 
 
-Overall, SPIR-V seemed the best choice for the \textit{hipstar}’s ``fat binary'' format’s IR. It is used both in later OpenCL standard as well as Vulkan. It also has LLVM-based conversion tools available as open source. Therefore, SPIR-V support was set early on as a requirement for hipstar supported OpenCL targets.  Its support is not widespread in OpenCL implementations at the time of this writing, but hopefully will be as the OpenCL implementations and input producers such as \textit{hipstar} mature. Notably, neither AMD's nor NVidia's OpenCL implementations support SPIR-V at the time of this writing, but this should not be a significant problem since both platforms are directly supported by the original HIP toolset anyhow.
+Overall, SPIR-V~\cite{SPIRV} seemed the best choice for the \textit{hipstar}’s ``fat binary'' format’s IR. It is supported both in later OpenCL standard as well as Vulkan. It also has good LLVM-based conversion tools available as open source. Therefore, SPIR-V support was set early on as a requirement for \textit{hipstar} supported OpenCL targets.  Unfortunately, its consumption support is not widespread in OpenCL implementations at the time of this writing, but hopefully this will change as the OpenCL implementations and input producers such as \textit{hipstar} mature. Notably, neither AMD's nor NVIDIA's OpenCL drivers support SPIR-V at the time of this writing. This should not be a significant problem in terms of HIP/CUDA portability since both platforms have direct support for them through their own implementations.
 
 \subsection{Clang/LLVM-based Compilation Flow}
 
 \pj{TODO Henry (?): draw a picture of the Clang/LLVM-based compilation chain.}
-\pj{Identify the hipstar-specific LLVM passes (yet to upstream).}
+\pj{Mention what was upstreamed to the LLVM Project to make hipstar work.}
+\pj{Identify the hipstar-specific LLVM passes yet to upstream.}
+
 \pj{TODO: Discuss the eager compilation slowness problem and how it was solved in hipstar and PoCL-level0.}
 
-\subsection{Warp-Level Primitives}
+\subsection{Handling Warp-Level Primitives}
 
-\pj{Pekka TODO: Discuss the subgroups vs. warp issues. Lane ID.}
-\pj{Pekka TODO: Non-uniform primitives.}
+CUDA and HIP platforms have a finer grained grouping of the threads (OpenCL work-items) executing the blocks (work-groups) called a warp. In the earlier CUDA versions \pj{clarify}, the threads in a warp could be assumed to execute in lock-step, implying that the enabled threads in the same warp would execute the same instruction. This implied that in some cases explicit synchronization could be omitted: In case of a usual read-modify-update case, the programmer could trust that the warp's threads all execute the read part before any of them proceed to the update part, enabling in-place-updates without explicit synchronization. However, with the later\pj{specify} releases of CUDA relying on lock-step behavior was deprecated~\cite{NVIDIAProgrammersManual}. ...
+
+However, the fixed size warps (32 threads for NVIDIA and usually 64 threads in AMD devices) affect the execution semantics when executing warp-level primitives that rely on the warp grouping and the mapping of the threads to the lanes of the warp.  Such primitives include the warp shuffles, which read data from a specific lane within the warp, and the explicit warp synchronization primitives. 
+
+\pj{There could be a figure here with possible subgroup id mappings and how warps always map the threads in linear order.}
+The base OpenCL specification, on the other hand, doesn't have a warp concept, but the work-items are free to make progress in any order and grouping. It has an extension called ``subgroups'' which can be used to implement the warp semantics when the kernel needs them. In contrast to  warps which have a specified form and content which allows the programmer to utilize them reliably, the basic subgroups of OpenCL are ``implementation-oriented''; they enable grouped execution in a manner that the is simplest or most efficient for the driver: The sizes of the subgroups are not fixed, but must be queried per kernel by the programmer in the basic extension. Also the way work-items are mapped to subgroup lanes (so they can be referred to when using cross-lane intrinsics) is also implementation-defined. To close the gap between subgroups and warps, an incremental specification extension \textit{cl\_intel\_reqd\_subgroup\_size} that \textit{forces} the subgroup size of the kernel to the desired size along with the linear id mapping was proposed.
+
+% HIP doesn't support the new _sync-ones, so let's focus on it.
+% Maybe also in the title of the paper.
+%\pj{Pekka TODO: Non-uniform primitives.}
 
 \subsection{Kernel Library}
 
@@ -212,25 +238,18 @@ Overall, SPIR-V seemed the best choice for the \textit{hipstar}’s ``fat binary
 The \textit{hipstar} kernel library is an implementation of the HIP math API, by using the OpenCL C math builtins, where possible.
 Many of the interfaces in the math API have an equivalent OpenCL builtin. Unfortunately, there are some functions which don't map directly, and thus require software based emulation:
 
+\pj{TODO: About the textures implementation.}
+\pj{TODO: About the CUDA intrinsics and their accuracy requirements not mapping to relaxed math limits of OpenCL and the native* OpenCL intrinsics not having any accuracy req. at all.}
+
 \begin{itemize}
 
-\item {Shuffle (e.g. \textit{\_\_shfl\_up()})}: While OpenCL 2.0 exposes some subgroup functions, they are not abstract enough to implement the \textit{\_\_shfl\_*} class of instructions. Intel provides an OpenCL vendor extension which exposes the shuffle capabilities of their hardware, but the semantics is slightly different from the CUDA/HIP shuffle semantics.
+\item {Atomics on floating-points}: Do not exist in OpenCL, though they can be implemented e.g. with a CAS loop, with a performance penalty.\pj{TODO: We should. Slow is better than nothing at all.}
 
-\item {Hardware intrinsics (e.g. \textit{\_\_fmul\_ru()})}: Many of these intrinsics implement one of the basic arithmetic operations 
-% TO SAVE SPACE
-%(add, sub, div, mul, and sqrt) 
-with a specific rounding mode only valid for this operation. OpenCL used to support setting the rounding mode in version 1.0, but this feature has been deprecated.
-% TO SAVE SPACE
-%, and to our knowledge no vendor implements this feature as an extension. Therefore, this can only be implemented via software emulation or with an OpenCL vendor extension.
-
-\item {Atomics on floating-points}: Do not exist in OpenCL,
-% SAVE SPACE:
-%, though they can be implemented e.g. with a CAS loop, with a performance penalty.
 \end{itemize}
 
 \subsection{OpenCL and SPIR-V Extensions}
 
-\textit{Hipstar} compilation flow is built in a way that different OpenCL features and extensions are not required from the target platform's driver unless the input HIP application specifically needs them. In Table~\ref{table:extensions} we summarize the various extensions \textit{hipstar} can use and which CUDA/HIP feature triggers their need~\footnote{We will update the status for the final publication.}. The extensions are in different stages in the Khronos Group standardization pipeline, which is also noted in the table. 
+\textit{Hipstar} compilation flow is built in a way that different OpenCL features and extensions are not required from the target platform's driver unless the input HIP application specifically needs them. In Table~\ref{table:extensions} we summarize the various extensions \textit{hipstar} can use and which CUDA/HIP feature triggers their need. The extensions are in different stages in the Khronos Group standardization pipeline, which is also noted in the table.~\footnote{We will update the status for the final publication.} 
 
 \begin{table*}[ht]
     \centering
@@ -239,15 +258,23 @@ with a specific rounding mode only valid for this operation. OpenCL used to supp
     \hline
 \textbf{Extension name} & \textbf{CUDA/HIP feature(s)} & \textbf{Status} \\
     \hline
-cl\_ext\_cuda\_prec\_intrinsics     & Currently not used by \textit{hipstar}. Proposoed for the future to implement math intrinsics with reduced precision requirements which do not map to the relaxed precision limits of OpenCL, thus require an extension. & To be proposed. \\
+cl\_ext\_alive\_only\_barrier       & A special work-group barrier for barrier calls which might not be reached by work-items that have exited the kernel. & To be proposed. \\
+    \hline 
+cl\_ext\_command\_buffer\_host\_data & CUDA graphs which transfer data between the host and the device. & To be proposed. \\
+    \hline 
+cl\_ext\_command\_buffer\_host\_sync & CUDA graphs which synchronize with the host require an extended command buffering mechanism. & To be proposed. \\
     \hline
-cl\_ext\_device\_side\_abort        & Currently not used by \textit{hipstar}. Proposed for the future to implement \_\_trap() on the low-level runtime side. & Public, potential adopters discussion. \\
+cl\_ext\_cuda\_prec\_intrinsics     & Proposed for the future to implement math intrinsics with reduced precision requirements which do not map to the relaxed precision limits of OpenCL, thus require an extension. & To be proposed. Currently not used by \textit{hipstar}.  \\
+    \hline
+cl\_ext\_device\_side\_abort        & Proposed for the future to implement \_\_trap() on the low-level runtime side. & Public, potential adopters considering. Currently not used by \textit{hipstar}. \\
+    \hline 
+cl\_ext\_extended\_device\_properties & hipGetDeviceProperties() can be used to query more device properties than the basic OpenCL device query API supports & To be proposed. \\
     \hline                          
-cl\_ext\_relaxed\_printf\_address\_space & Currently not used by \textit{hipstar}. Proposed for the future to unify printf() behavior with non-constant address spaces. & Public, potential adopters discussion. \\
+cl\_ext\_relaxed\_printf\_address\_space &  Proposed for the future to unify printf() behavior with non-constant address spaces. & Public, potential adopters considering. Currently not used by \textit{hipstar}. \\
     \hline
 cl\_intel\_required\_subgroup\_size & When calling warp-level primitives that depend on the 32/64 warp size or the thread id ordering. & Promotion to a generalized 'khr' extension being discussed. \\ 
     \hline
-cl\_khr\_command\_buffer            & CUDA graph implementation for optimized execution. & Public. \\
+cl\_khr\_command\_buffer            & Optimized implementation of CUDA graph execution. Extended with SVM commands. & Public. \\
     \hline                          
 cl\_khr\_fp64                       & If double precision floating point is used. & Public. \\
     \hline 
@@ -277,7 +304,7 @@ cl\_khr\_subgroup\_shuffle          & Warp-level shuffle operations. & Public. \
 
 The CUDA software platform and as implication, ROCm, include a set of useful libraries in addition to the general purpose program input. These libraries include common routines such as BLAS (Basic Linear Algebra Subprograms) and Deep Neural Network (DNN) acceleration libraries.
 
-In order to support nearly drop-in compile-time compatibility with various applications that utilize either the CUDA or HIP libraries, we have ported a selection of them in a fashion that they can utilize interoperate with the \textit{hipstar} platform through interoperability interfaces. We discuss the libraries in the following and highlight their essential technical aspects.
+In order to support nearly drop-in compile-time compatibility with various applications that utilize either the CUDA or HIP libraries, we have ported a selection of them in a fashion that they can utilize and interoperate with the \textit{hipstar} platform. We discuss the libraries in the following and highlight their essential technical aspects.
 
 \subsection{cuBLAS / hipBLAS}
 
@@ -322,12 +349,9 @@ Fortunately there are now various active OpenCL implementations that can be used
 \subsection{Remaining Compatibility Gaps}
 \label{subsection:compatgaps}
 
-\pj{Discuss features specific to CUDA, from the doc we wrote in Parmance.}
+\pj{Discuss features specific to CUDA, from the doc I wrote in Parmance.}
 
-\subsection{Further OpenCL Extension Needs}
 
-\pj{CUDA intrinsics. Their accuracy is somewhat higher than what is required by the relaxed math of OpenCL.}
-\pj{Command buffer: The command buffer spec currently doesn't allow SVM copy/fill commands. It doesn't also allow host interaction such as read/write buffers or host events. This means we can only support a subset of CUDA graphs with a host-side fallback necessary.}
 % TODO: the OpenCL extensions identified and proposed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -368,7 +392,7 @@ Thanks to using the open standard OpenCL as the portability layer, various debug
 
 \subsection{RISC-V}
 
-\pj{If we manage to do the port in time, we could show execution on  RISC-V CPUs.}
+\pj{If we manage to do the port in time, we could show execution on RISC-V CPUs.}
 
 \subsection{CUDA}
 
@@ -382,6 +406,7 @@ Thanks to using the open standard OpenCL as the portability layer, various debug
 In order to validate the drop-in compatibility level of \textit{hipstar}, we ported a set of well-known applications and libraries used widely in HPC that target either the CUDA or HIP API. The applications along with any source code modifications required are outlined in the following.
 
 \pj{TODO: also highlight which compatibility library was tested}
+\pj{If there's not much to write about each ported app, we could create a table of them and have columns which HIP/hipstar features or libraries they use.}
 
 \subsection{CP2K}
 
@@ -419,10 +444,11 @@ In this section we evaluate the performance of \textit{hipstar}  with specific f
 \pj{TODO: Evaluate how much overhead on top of straight HIP/CUDA to CUDA vs. through PoCL-CUDA}
 \pj{TODO: Evaluate how much overhead going through PoCL-level0 incurs on top of straight LZ BE}
 
-\subsection{Overhead Analysis}
-
 \pj{Straight to CUDA vs. CUDA to HIP to hipstar to OpenCL + to OpenCL to PoCL-CUDA to CUDA}
 
+\subsection{Graphs on Command Buffers}
+
+\pj{Michal (?) TODO: numbers on command buffer benefits here?}
 
 \pj{TODO: Comparisons}
 \pj{TODO: Overhead analysis}
