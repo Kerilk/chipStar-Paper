@@ -1,0 +1,40 @@
+\section{Related Work}
+\label{section:relatedWork}
+
+We divide the related work discussion to the following three areas: A) Software which aim to extend the portability of CUDA and/or HIP applications, and to the essential components in this type of software platforms, which are B) the internal device program representation that provides a virtual instruction-set abstraction to cover a set of real instruction-sets, in order to enable portability of the kernel programs to various heterogeneous devices, and,  C) portability layer APIs, that hide the runtime aspects of different systems to an abstraction layer. We overview the relevant work in these areas in the following subsections.
+
+\subsection{Software for Porting CUDA Programs}
+\label{subsec:softwareForPortingCUDA}
+
+\textit{Hipstar} is based on HIPCL~\cite{HIPCL}. It is a result of an almost a complete rewrite of the HIPCL code base and maturing it over approximately three years of work in collaboration with multiple partners and users. Various missing essential features have been implemented since the initial work. This article significantly expands upon the original poster abstract that introduced the early-prototype-stage HIPCL. 
+
+Before \textit{hipstar}, there was also an experimental port of the HIPCL code base to utilize Intel's Level Zero~\cite{l0} low level API directly~\cite{HIPLZ}. Both the OpenCL backend of HIPCL and the Level Zero backend were merged to the same code base which is now called \textit{hipstar}. The direct Level Zero access is used as an additional backend for comparison purposes. However, at the time of this writing, the recommended path from CUDA/HIP to Level Zero goes through the OpenCL backend and PoCL's~\cite{poclIJPP} Level Zero backend since the OpenCL code path has matured longer and is somewhat more robust.
+
+ROCm is the AMD's official GPU software platform~\cite{ROCm}. It consists of a general purpose programming API called Heterogeneous compute Interface for Portability (HIP)~\cite{hip}, and a set of libraries that support different degrees of compatibility with the CUDA platform. HIP is very close to CUDA, and in fact AMD provides a source-to-source translation tool called HIPify that can automate the porting process. Interestingly, although heavily based on the NVIDIA-driven CUDA, AMD now promotes HIP as the primary C++ programming API for their GPU platforms. Since AMD GPUs have increased their market share and received major design wins in large HPC installations, HIP as such has risen in importance as an application-facing interface.
+
+SYCLomatic~\cite{SYCLomatic} is a tool contributed by Intel Corporation that can be used to convert CUDA sources to the cross-vendor open standard SYCL~\cite{SYCL}. Similar to AMD's HIPipy, but in contrast to \hipstar which aims for source-level compatibility, SYCLomatic is a source-to-source conversion tool, which has its good and bad sides. Its most apparent benefit is more political than technical; it encourages the further development of the converted application to proceed using the open SYCL standard instead of the single-vendor dictated CUDA. The main drawback is that in reality many code bases are difficult or impossible to convert to SYCL for good due to legacy, political or technical reasons. Being able to target many platforms from single source code using a \hipstar-style approach has its benefits. In addition, since \hipstar is not a linkage-time solution, but requires recompilation, it coincidentally also enforces the political aspect of pushing the application towards open standard APIs, in this case OpenCL and SPIR-V.
+
+% https://github.com/vosen/ZLUDA
+ZLUDA~\cite{zluda} is a proof-of-concept level tool for running unmodified CUDA applications on top of \lz by implementing the \cuda driver API in \lz, and converting NVIDIA PTX~\cite{ptx} to SPIR-V at runtime. As it is a proper ``drop-in solution'' that works at linkage time ZLUDA it can execute unmodified CUDA applications. However, its developed has stalled and it only supports a limited subset of applications and only on the Intel devices supported by the Level Zero API. ZLUDA author claims in their web page that they can achieve performance benefits when running straight on top of the lower level \lz instead of the somewhat higher level OpenCL. Since \hipstar supports both, we were able to measure this difference accurately, and found it to be negligible\pj{to do actually}. Another beneficial aspect pointed out by the author is that PTX has instructions which map directly to the Intel GPU instructions which are not exposed in OpenCL C. Although \hipstar uses the OpenCL runtime for portability, it targets SPIR-V instead of OpenCL C as the device-side programming language, thus this drawback does not appear with it. The potential overhead is first passing through LLVM IR, which might lose beneficial information, but that also is found not to be an issue according to the measurements presented in Section~\ref{TODO} \pj{to do actually}.
+
+MCUDA~\cite{MCUDA} was the first tool for porting CUDA programs to non-NVIDIA platforms. MCUDA does source-to-source translation of kernels in a fashion that the translated kernels can execute efficiently on CPUs on a single CPU thread while respecting the barrier synchronization. In the case of \hipstar, since it uses OpenCL as a portability layer, we can target also similar vectorized CPU execution through CPU-targeting OpenCL implementations such as the Intel OpenCL CPU driver and PoCL's CPU drivers~\cite{poclIJPP}. Both of them are capable of vectorizing work-items across work-groups, which translates to implicit autovectorization of CUDA/HIP kernels across CUDA threads.
+
+Swan~\cite{Swan} is another eary source-to-source tool for CUDA porting.\pj{TODO: check if it's actually an API which has CUDA and CL backends?} It generates OpenCL code from CUDA, providing similar level of portability as \hipstar does. It hasn't been kept updated since its introduction. Another similar tool is CU2CL~\cite{CU2CL} published in the same year, which also is now inactive.  In comparison to \hipstar the main technical differences are that \hipstar utilizes the latest version of the OpenCL standard to support the newer CUDA features, uses SPIR-V as the intermediate language (no need to generate textual OpenCL C with its limitations) and it doesn't suffer from the problems related to source-to-translations as \hipstar provides source-level compatibility.
+
+The closest related CUDA porting tool to  \hipstar we could find is CUDA-on-CL~\cite{CUDAonCL}. Like, \hipstar, it similarly compiles CUDA programs using Clang/LLVM-based compiler chain to binaries which then execute on OpenCL platforms. The main technical differences in \hipstar are related to our use of modern OpenCL standard features to implement some of the features of CUDA. These include using Coarse Grained SVM to implement offsetting device pointers at the host-side and implementing warp-level primitives such as shuffles using the subgroup features. We also propose new standard extensions where there are remaining gaps, and will work actively to get them standardized. Furthermore, CUDAonCL compiles device kernels to OpenCL C whereas \hipstar uses SPIR-V as the portable binary format, of which supported targets is expanded by additional support in the open source OpenCL implementation~\cite{poclIJPP}.
+
+
+\subsection{Device Program Representations} 
+\label{subsec:deviceProgramRepresentations}
+
+... \pj{TODO: 
+Compare to the IWOCL 2023 paper which proposed LLVM IR as the IR (after it's published).}
+\pj{TODO: Compare to Java bytecode.}\pj{TODO: SPIR 1.2}
+
+\subsection{Portability Layer APIs}
+\label{subsec:portabilityAPIs}
+
+... \pj{TODO: SYCL.} 
+\pj{TODO: LevelZero.} 
+\pj{TODO: AMD ROCr}
+\pj{TODO: What other options are there?}

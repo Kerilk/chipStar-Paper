@@ -31,3 +31,173 @@ keywords = {OpenCL, SPIR-V, Shared Virtual Memory, CUDA, HIP},
 location = {Munich, Germany},
 series = {IWOCL '20}
 }
+
+@misc{clang, 
+   title={{Clang Compiler}}, 
+   note={\url{http://clang.llvm.org/}},
+}
+
+@misc{ROCm,
+   author={{Advanced Micro Devices, Inc}},
+   title={{ROCm} documentation - release 4.5.0},
+   month={March},
+   day={31},
+   year={2023},
+   note= {\url{https://rocmdocs.amd.com/_/downloads/en/latest/pdf/}},
+}
+
+@misc{hip, 
+   title={{Heterogeneous compute Interface for Portability (HIP) Programming Guide v5.3}}, 
+   note={\url{https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3} (accessed Apr. 5, 2023)},
+}
+
+@misc{l0, 
+   author={{Intel Corporation}},
+   title={oneAPI Level Zero Specification Documentation}, 
+   note={\url{http://spec.oneapi.io/level-zero/latest/index.html} (accessed Apr. 5, 2023)},
+}
+
+@inproceedings{CUDAonCL,
+author = {Perkins, Hugh},
+title = {CUDA-on-CL: A Compiler and Runtime for Running NVIDIA® CUDA™ C++11 Applications on OpenCL™ 1.2 Devices},
+year = {2017},
+isbn = {9781450352147},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3078155.3078156},
+doi = {10.1145/3078155.3078156},
+booktitle = {Proceedings of the 5th International Workshop on OpenCL},
+articleno = {6},
+numpages = {4},
+keywords = {Machine Learning, Compilers, GPGPU, CUDA, LLVM, OpenCL},
+location = {Toronto, Canada},
+series = {IWOCL 2017}
+}
+
+@misc{spirv, 
+   title={{The Industry Open Standard Intermediate Language for Parallel Compute and Graphics}}, 
+   note={\url{https://www.khronos.org/spir/}},
+}
+
+@misc{cuda, 
+   title={{Nvidia CUDA Toolkit}}, 
+   note={\url{https://developer.nvidia.com/cuda-toolkit}},
+}
+
+@misc{opencl, 
+   title={{Open Standard for Parallel Programming of Heterogeneous Systems(OpenCL)}}, 
+   note={\url{https://www.khronos.org/opencl/}},
+}
+
+@misc{openmp,
+   title={{OpenMP}}, 
+   note={\url{https://www.openmp.org/}},
+}
+
+@misc{openacc,
+   title={{OpenACC}}, 
+   note={\url{https://www.openacc.org/}},
+}
+
+@misc{SYCL,
+   author={{The Khronos\textsuperscript{\textregistered} SYCL\texttrademark ~Working Group}},
+   title={{SYCL\texttrademark ~2020 Specification}}, 
+   note={\url{https://www.khronos.org/sycl/} (accessed Apr. 4, 2023)}
+}
+% extcopyright
+
+@misc{SYCLomatic,
+  author={{Intel Corporation and contributors}},
+  title={{SYCLomatic}},
+  note={{\url{https://github.com/oneapi-src/SYCLomatic} (accessed Apr. 4, 2023)}}
+}
+
+@misc{tf,
+   title={{TensorFlow}}, 
+   note={\url{https://www.tensorflow.org/}},
+}
+
+@misc{pytorch,
+   title={{PyTorch}},
+   note={\url{https://pytorch.org/}},
+}
+
+@misc{onemkl,
+   title={{oneMKL}},
+   note={\url{https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html}}
+}
+
+@misc{dpc,
+   title={{DPC++}},
+   note={\url{https://www.intel.com/content/www/us/en/developer/tools/oneapi/data-parallel-c-plus-plus.html}}
+}
+
+@misc{oneapi, 
+   title={{Intel oneAPI}}, 
+   note={\url{https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html}}
+}
+
+@misc{ptx,
+    title = {{P}arallel {T}hread {E}xecution ({PTX}) and {ISA}},
+    note = {\url{https://docs.nvidia.com/cuda/parallel-thread-execution/}}
+}
+
+@misc{zluda,
+    title = {{ZLUDA: CUDA on Intel GPUs}},
+    note = {\url{https://github.com/vosen/ZLUDA}}
+}
+
+@misc{intel_openmp,
+    title = {{Intel® oneAPI DPC/C++ Compiler and Intel® Fortran Compiler
+}},
+    note = {\url{https://www.intel.com/content/www/us/en/develop/documentation/get-started-with-cpp-fortran-compiler-openmp/top.html}},
+}
+
+@inproceedings{HIPLZ,
+ author = {Jisheng Zhao and Colleen Bertoni and Jeffrey Young and Kevin Harms and Vivek Sarkar and Brice Videau},
+ title = {{HIPLZ}: Enabling Performance Portability for
+Exascale Systems},
+ booktitle = {Proceedings of the HeteroPar 2022: 20th International Workshop on Algorithms, Models and Tools for Parallel Computing on Heterogeneous Platforms},
+ year = {2022},
+ month = {August},
+ publisher = {Springer},
+} 
+
+
+@inproceedings{MCUDA,
+title = "MCUDA: An efficient implementation of CUDA kernels for multi-core CPUs",
+abstract = "CUDA is a data parallel programming model that supports several key abstractions - thread blocks, hierarchical memory and barrier synchronization - for writing applications. This model has proven effective in programming GPUs. In this paper we describe a framework called MCUDA, which allows CUDA programs to be executed efficiently on shared memory, multi-core CPUs. Our framework consists of a set of source-level compiler transformations and a runtime system for parallel execution. Preserving program semantics, the compiler transforms threaded SPMD functions into explicit loops, performs fission to eliminate barrier synchronizations, and converts scalar references to thread-local data to replicated vector references. We describe an implementation of this framework and demonstrate performance approaching that achievable from manually parallelized and optimized C code. With these results, we argue that CUDA can be an effective data-parallel programming model for more than just GPU architectures.",
+author = "Stratton, {John A.} and Stone, {Sam S.} and Hwu, {Wen Mei W.}",
+year = "2008",
+doi = "10.1007/978-3-540-89740-8_2",
+language = "English (US)",
+isbn = "3540897399",
+series = "Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics)",
+pages = "16--30",
+booktitle = "Languages and Compilers for Parallel Computing - 21st International Workshop, LCPC 2008, Revised Selected Papers",
+note = "21st International Workshop on Languages and Compilers for Parallel Computing, LCPC 2008 ; Conference date: 31-07-2008 Through 02-08-2008",
+}
+
+@article{Swan,
+title = {Swan: A tool for porting CUDA programs to OpenCL},
+journal = {Computer Physics Communications},
+volume = {182},
+number = {4},
+pages = {1093-1099},
+year = {2011},
+issn = {0010-4655},
+doi = {https://doi.org/10.1016/j.cpc.2010.12.052},
+url = {https://www.sciencedirect.com/science/article/pii/S0010465511000117},
+author = {M.J. Harvey and G. {De Fabritiis}},
+keywords = {GPU, CUDA, OpenCL},
+}
+
+@Article{cu2cl,
+	author =	{Gardner, Mark and Sathre, Paul and Feng, Wu-chun and Martinez, Gabriel},
+	title = 	"{Characterizing the Challenges and Evaluating the Efficacy of a CUDA-to-OpenCL Translator}",
+	journal =	{Parallel Computing},
+	volume =	{39},
+	number =	{12},
+	month =	{December},
+	year =	{2013},
+}
