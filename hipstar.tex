@@ -127,26 +127,78 @@ Finally, conclusions and future work plans are presented in~\ref{section:conclus
 \section{Runtime}
 \label{section:runtime}
 
-\pj{TODO: aspects related to runtime, how to make it portable, mapping to OpenCL}
+The primary target for \hipstar is to support the subset of CUDA features
+defined by HIP and expanding the feature set beyond it whenever feasible.
+At the time of this writing, HIP refers to features only at CUDA version 9.0
+or older
+
+%, thus excludes modern functionality available in later NVIDIA
+%devices such as page-fault relying unified memory.
+
+CUDA and our chosen portability layer API, OpenCL, share various platform and
+memory model abstractions, for example, ``device memory'' is the same as
+``global memory'' in OpenCL terminology (``shared'' is ``local'').
+To avoid confusion in terminology we utilize only the CUDA terms in the rest of
+this article. Similarly, we refer to the original CUDA versions when talking about
+functions that have been cloned in the HIP API.
 
 \subsection{Memory Management}
 
-CUDA and HIP support device pointers embedded into other data structures in host memory.\pj{TODO: Expand this aspect. What type of host-device memory management is supported in hipstar and which CUDA version, unified shared memory etc. is not.} Implementation of this feature without a shared address space requires either tracking the device pointers and updating them before sending data to GPU, which is complex, error-prone, and in the general case impossible to perform at compile time in a watertight manner. Therefore, \textit{hipstar} requires a shared virtual address space across the host and the device(s).
+The main interface in CUDA's device memory management is \textbf{cudaMalloc()}. It returns a
+raw pointer to the targeted device's global memory, instead of an opaque handle as is the
+case with OpenCL's basic buffer management functionality. This presents a divergence
+from the basic OpenCL specification for device memory management, which only provides a buffer
+management API (\textbf{clCreateBuffer()} and others) which returns opaque handles (cl\_mem).
 
-\pj{TODO: OpenCL 3.0 requires coarse grained SVM of the minimal implementation, should we state it here clearly?}
+The opaque buffer handles cannot be used to implement CUDA device memory management
+because it is not possible perform pointer arithmetics or pass addresses in other data structures,
+which is allowed by CUDA. In order to implement these capabilities, we utilized the
+Shared Virtual Memory (SVM) API of the OpenCL specification to allocate device pointers.
+The SVM API allocates memory and returns a raw pointer to a shared virtual address space
+region. SVM's ``Coarse Grained buffer'' variant is mandatory in the OpenCL 3.0 specification, and
+suffices to implement the basic device memory management features of CUDA. However, using SVM for
+implementing device memory management has a drawback that the device must support SVM (map
+the allocated regions to the same addresses in the host point of view) although physical device
+pointers would suffice. This means that the \hipstar implementation is actually
+implementing CUDA's Unified Memory model by default.%~\pj{TODO: Utilize USM device-side allocations to optimize the device-only allocations?}.
 
-Related to memory management, a requirement \textit{hipstar} places for the supported OpenCL platforms is coarse grained Shared Virtual Memory (SVM).
-\pj{Michal/Henry (?) TODO: Describe how we use it. When we do unmap/map? Before and after kernel launch?}
-\mb{We map at allocation time, and also at hipMemset \& hipMemcpy time. TBH does not make sense to me, but perhaps i'm missing something. At kernel launch AFAICT only the global variables are mapped/unmapped, which i think is correct. }
-\pj{unmap/map is done implicitly for coarse grained SVM at command launch time, IIRC}
+In OpenCL coarse grained SVM, memory consistency between device and host memories is guaranteed at
+the execution boundaries of kernel commands referring to the SVM allocation. The kernels
+referring to the SVM allocations must either use the SVM allocations as argument buffers, or
+be explicitly denoted to refer to allocations used indirectly. The latter poses a challenge
+since in principle any kernel can refer to any previous allocation as CUDA device pointers can
+be passed inside data structures or global variables. For coarse grained SVM,
+OpenCL's \textbg{clSetKernelExecInfo()} must be used to list all potentially used SVM allocations.
+This poses a possible performance overhead since the \hipstar runtime must play it safe
+and register all possible previous allocations to any kernel, unless proven that the
+kernel doesn't refer to a particular allocation. It can then lead to unnecessary data
+synchronizations between the host and the device memories.
+%\pj{TODO: optimize via a simple kernel analysis.}
 
-\pj{We should fix \url{https://github.com/CHIP-SPV/chip-spv/issues/211} and document it here ;)}
-\mb{Fixing \#211 would 1) require help from backends, and also 2) we need to find out if it's legal to pass host pointers without hipHostRegister }
-\pj{we discussed this yesterday with Henry, should not be possible if not unified memory is not supported by the platform, so the worst case implementation should work -- or which backend help you refer to?}
-\pj{TODO: Discuss the shadow buffer implementation and its pitfalls. hipRegisterHostMemory() difficulties.}
-\pj{TODO: Optimize the memory management by using USM.}
+CUDA provides an API to \textit{pin} memory so its kept resident in the device memory and
+accessible directly by the host, and is not swapped out to disk. The primary APIs to this functionaly are
+\textbf{cudaHostAlloc()} and \textbf{cudaHostRegister()}. The former allocates pinned
+memory directly and the latter pins a previous device allocation. \textbf{cudaHostAlloc()}
+is simple to implement with coarse grained SVM since, by coincidence of using
+a shared virtual memory allocation, the buffers are available to both the host and
+the device. The allocation might not be pinned for the duration of the execution if
+the implementation can swap such allocations safely, but that aspect is only potentially
+inspectable in performance difference. However, \textbf{cudaHostRegister()} is
+more challenging to implement on top of SVM since it allows registering a host address
+range to be a pinned region accessible both from the host and the device \textit{after}
+the host memory has been allocated. Since the host memory might not been allocated with the
+OpenCL SVM API, but with a system memory allocator or even from the stack, to implement
+correct functionality \hipstar has to create a shadow buffer using \textbf{clSVMAlloc()} and
+synchronize it with the host region at kernel start and end.\pj{TODO: can USM pin host memory afterwards?}
 
-\pj{TODO: About the difficulties of SVM registration (kernel exec info). Need to register allocations "just in case" in case not sure they are not accessed. This leads to a race condition when another thread frees an allocation before the kernel is started or when it starts. Done easier in level0 where one can just set a flag.}
+% https://developer.nvidia.com/blog/unified-memory-cuda-beginners/
+
+The later NVIDIA architectures (since compute capability 6) support on-demand page migration which
+relies on hardware memory management unit (page fault based buffer migrations) for coherence
+on the Unified Memory allocations. This frees the programmer from the need to perform explicit memory
+allocation and synchronization calls. This functionality maps to the Fine-Grained System SVM of OpenCL,
+but since its support by hardware and drivers is very rare at the time of this writing, it is not
+yet implemented by \hipstar.
 
 \subsection{Task Synchronization}
 
@@ -167,6 +219,7 @@ The native interoperability API can be used to initialize HIP context (with assi
 %Most of the HIP API maps trivially to the OpenCL API, with some notable exceptions which might call for new OpenCL extensions:\pj{TODO: We should just make them extensions (proposals) to clean up the story.}
 
 %\mb{Pekka TODO: do we also list APIs which can be implemented but aren't yet (because nobody's done the work) ? looking quickly at CHIPBindings.cc, there are >50 hip API functions which have not been implemented, things like Peer2peer, hipIPC*, hipModuleOccupancy*, hipProfiler*, hipMemPool*, hip{Malloc,Free}Async etc; some might require OpenCL extensions }
+%\pj{I think not worth listing here, as it's only a matter of time when these are implemented and if apps do not use them, they %are not high prio.}
 
 %\begin{itemize}
 
@@ -536,7 +589,7 @@ In this section we evaluate the performance of \textit{hipstar}  with specific f
 
 \pj{TODO: Drop-in/link-time replacement (CUDA binary compatibility)?}
 \pj{TODO: Consider "obese" binaries: Allow adding target-specific binaries (but via the OpenCL binary interface) to the binary for faster initial launch.}
-
+\pj{TODO: on-demand migrated UM (via Fine Grained system SVM). We could implement this on CPU drivers for enabling testing such codes.}
 \bibliography{IEEEabrv,hipstar}
 \bibliographystyle{IEEEtran}
 
