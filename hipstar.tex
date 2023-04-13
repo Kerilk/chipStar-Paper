@@ -78,23 +78,17 @@
 % Remember, if you use this you must call \IEEEpubidadjcol in the second
 % column for its text to clear the IEEEpubid mark.
 
-%Well it depends on the kind of paper you want to write, but if we present CHIP-SPV with it's environment, we need to have Phil (ORNL) for his work on hipBLAS (and maybe Wael, but his contributions are more limited), we need to have the work done on applications by Colleen and Rahul (NERSC), and we need to have Jisheng that wrote the prototype and Jeffrey (both GaTech) that designed the initial interrop. I think you can count on contributions from most of these.
-%Of course, we'll have the whole team at intel and Paulius. I doubt AMD will want to be on.
-%In the end it could very well be a Journal paper, depending on the above involvement in the text.
-%Once here, we only have a couple more seniors who may want to join: Vivek (GaTech), Kevin (ANL), who were on the original hiplz paper. They both did participate in the writing.
-%Since we're not talking about CUDA I assume Hyesoon and her team will want to do a separate paper
-
 \maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
 
-%This document describes the most common article elements and how to use the IEEEtran class with \LaTeX \ to produce files that are suitable for submission to the IEEE.  IEEEtran can produce conference, journal, and technical note (correspondence) papers with a suitable choice of class options. 
+%This document describes the most common article elements and how to use the IEEEtran class with \LaTeX \ to produce files that are suitable for submission to the IEEE.  IEEEtran can produce conference, journal, and technical note (correspondence) papers with a suitable choice of class options.
 
 \pj{This first paragraph is optional, we can remove it:}
 Due to NVIDIA dominating the GPU market and despite its lack of cross-vendor portability, the C/C++-based application programming interface of CUDA and its related key libraries are still used in a significant fraction of software utilizing GPU-based acceleration. AMD's ROCm and its Heterogeneous-compute Interface for Portability (HIP) aims to alleviate the CUDA's lack of portability by providing a route out from the NVIDIA CUDA platform to AMD's devices.
-  
+
 In this article we describe \textit{hipstar}, an open source software platform which allows running CUDA and HIP programs on an a open cross-vendor standard software platform consisting of an OpenCL/SPIR-V backend and a carefully crafted set of standard extensions. We present the relevant technical aspects of \textit{hipstar} related to the feature mismatches between CUDA/HIP and OpenCL and exemplify its runtime overheads in comparison to executing CUDA/HIP applications directly with NVIDIA's CUDA software platform. The measurements show that the overheads induced by \textit{hipstar} are typically only in the order of N-M\%, thus negligible.\pj{TODO} Although being a relatively young code base, \textit{hipstar} is now considered mature enough for wider usage, which is demonstrated by the described application porting case studies performed for the Aurora supercomputer.
 
 \end{abstract}
@@ -113,7 +107,17 @@ For the end-users and other hardware vendors, naturally, the situation of a sing
 
 AMD's ROCm~\cite{ROCm} software platform and its Heterogeneous-compute Interface for Portability (HIP) language~\cite{hip} helps escaping the CUDA walled garden by providing a route out from the NVIDIA CUDA platform to AMD's devices. HIP defines a subset of CUDA that is more easily portable to various hardware, thanks mainly to omitting various advanced features available in the later CUDA versions (some of these features are discussed in Section~\ref{subsection:compatgaps}). In order to enable easy automated path from CUDA applications, HIP is largely a copy of a CUDA C/C++ subset with a few minor differences, and renamed function names. It alleviates the CUDA portability problem, but doesn't solve it satisfactorily due to AMD targeting primarily their self-specified low level ROCm APIs which have not been so far ported to other than AMD platforms. An open source CUDA/HIP software platform solely based on open standards with a sincere aim for cross-vendor portability is still lacking.
 
-In this article we propose a complete open source software platform that enables porting applications from NVIDIA-driven CUDA and AMD-driven ROCm platforms to any platform supporting the cross-vendor open standards OpenCL and SPIR-V. We evaluate the portability aspects on platforms with proprietary drivers, and as a further contribution, extend an open source OpenCL implementation to expand the scope to further device types. In comparison to the previous solutions, our proposed platform enables usually source-modification-free compilation of HIP programs along with supporting the necessary library dependencies for the most essential CUDA/ROCm APIs. 
+In this article we make the following contributions:
+
+\begin{enumerate}
+  \item We publish a complete open source software platform that enables porting applications from NVIDIA-driven CUDA and AMD-driven ROCm platforms to any platform supporting the cross-vendor open standards OpenCL and SPIR-V,
+  \item evaluate the portability aspects on platforms with proprietary drivers,
+  \item extend an open source OpenCL implementation to expand the scope to further device types,
+  \item provide an extensive related work review for contemporary API options for implementing the portability
+    layer.
+\end{enumerate}
+
+In comparison to the previous solutions, our proposed platform typically enables source-modification-free compilation of HIP/CUDA programs along with supporting the necessary library dependencies for the most essential CUDA/ROCm APIs.
 
 The rest of the article is organized as follows: Section~\ref{section:runtime} discusses the technical challenges related to the runtime execution. Section~\ref{section:compilation} describes the most relevant parts of the compiler support. Section~\ref{section:libraries} identifies the most important libraries that must be supported for compatibility, and how they are supported in the proposed software platform. Section~\ref{section:expandingCompat} shows how we expanded the platform support using open source tooling. The aspects related to directly supporting CUDA programs instead of converting them first to HIP are discussed in Section~\ref{section:directCUDA}. Debugging and profiling support is outlined in Section~\ref{section:debuggingAndProfiling}. Then we describe how the software platform portability was tested (Section~\ref{section:platformPortability}), source code portability validated (Section~\ref{section:applications}) and performance evaluated (Section~\ref{section:applications}). Section~\ref{section:relatedWork} overviews the related work to the proposed software platform and its components. 
 Finally, conclusions and future work plans are presented in~\ref{section:conclusions}.

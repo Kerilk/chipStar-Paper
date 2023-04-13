@@ -7,9 +7,9 @@ B) portability layer APIs that hide the runtime aspects of different systems beh
 \subsection{Software for Porting CUDA Programs}
 \label{subsec:softwareForPortingCUDA}
 
-\textit{Hipstar} is based on HIPCL~\cite{HIPCL}. It is a result of an almost a complete rewrite of the HIPCL code base and maturing it over approximately three years of continuous collaboration work with multiple partners and HPC users. Various missing essential features have been implemented since the initial prototype was published. This article significantly expands upon the original poster abstract that introduced the early-prototype-stage HIPCL. 
+\textit{Hipstar} is based on HIPCL~\cite{HIPCL}. It is a result of an almost a complete rewrite of the HIPCL code base and maturing it over approximately three years of continuous collaboration work with multiple partners and HPC users. Various missing essential features have been implemented since the initial prototype was published. This article significantly expands upon the original poster abstract that introduced the early-prototype-stage HIPCL.
 
-Before \textit{hipstar}, there was also an experimental port of the HIPCL code base to utilize Intel's Level Zero~\cite{l0} low level API directly~\cite{HIPLZ}. Both the OpenCL backend of HIPCL and the Level Zero backend were merged to the same code base which we now call \textit{hipstar}. The direct Level Zero access is used as an additional backend for comparison purposes in this article, with the article's primary focus being on the OpenCL backend. 
+Before \textit{hipstar}, there was also an experimental port of the HIPCL code base to utilize Intel's Level Zero~\cite{l0} low level API directly~\cite{HIPLZ}. Both the OpenCL backend of HIPCL and the Level Zero backend were merged to the same code base which we now call \textit{hipstar}. The direct Level Zero access is used as an additional backend for comparison purposes in this article, with this article's primary focus being on the OpenCL backend.
 %However, at the time of this writing, the recommended path from CUDA/HIP to Level Zero goes through the OpenCL backend and PoCL's~\cite{poclIJPP} Level Zero backend since the OpenCL code path has matured longer and is somewhat more robust.
 
 ROCm is the AMD's official GPU software platform~\cite{ROCm}. It consists of a general purpose programming API called Heterogeneous compute Interface for Portability (HIP)~\cite{hip}, and a set of libraries that support different degrees of compatibility with the CUDA platform. HIP is very close to CUDA, and in fact AMD provides a source-to-source translation tool called HIPify that can automate the porting process. Interestingly, although heavily based on the NVIDIA-driven CUDA, AMD now promotes HIP as the primary C++ programming API for their GPU platforms. Since AMD GPUs have increased their market share and received major design wins in large HPC installations, HIP as such has risen in importance as an application-facing interface.
@@ -29,27 +29,87 @@ The closest related CUDA porting tool to  \hipstar we could find is CUDA-on-CL~\
 \subsection{Runtime APIs for Heterogeneous Platform Portability}
 \label{subsec:portabilityAPIs}
 
-\pj{Moved this before the program representations so it's nicer to refer to it.}
-... \pj{OpenMP:{~\cite{10.1145/3559009.3569687}}}
-... \pj{TODO: SYCL.} 
-... \pj{TODO: LevelZero.} 
-... \pj{TODO: HSA}
-Heterogeneous System Architecture (HSA) 
+Both CUDA and HIP are single-vendor defined programming models.
+This is reflected in their platform APIs which define limited
+queries for device properties, restricted by each vendor's
+GPU offerings. The goal of \hipstar is to
+expand the portability of CUDA/HIP programming models. Thus,
+the key requirement to the underlying runtime API is to support
+the essential features of CUDA/HIP in order to exploit the
+potential perfromance benefits, for example, available via
+parallel and asynchronous execution of tasks, overlapping of
+data transfers with task execution. Furthermore, the runtime API
+should provide services to enhance performance portability of
+the implementation by allowing to query the capabilities of the
+devices to tune the execution to match the target's features.
 
-... \pj{TODO: AMD ROCr}
-... \pj{TODO: Vulkan compute}
-... \pj{TODO: Unified Runtime by Intel and Codeplay}
-... \pj{TODO: What other cross-vendor options are there?}
+There are only a few choices for such a runtime API, especially
+if limiting oneself to alternatives that have support from
+multiple vendors. One of programming models that has increased
+in popularity is SYCL~\cite{SYCL}, which is the default
+programming model of Intel's oneAPI software stack. SYCL
+resembles CUDA in being a C++-based single-source API and
+could be a potential option for the runtime layer. It diverged
+from its original goal of an improved C++ binding to OpenCL
+to a more independent ecosystem with multi-backend implementations.
+However, we believe that OpenCL is better for a portability
+layer use since it's a lightweight C API, has first class
+support from multiple vendors and defines device and platform
+queries that can be used to tune the execution at runtime. OpenCL
+also has powerful task graph abstraction that can be interfaced
+with multiple in-order and out-of-order command queues~\cite{OpenCLTLP},
+events and, more recently, relaunch of the task graphs can
+be optimized with command buffering.
+\pj{Not  sure if being a C API is a benefit since CUDA is C++ too, which
+already brings in the C++ dependency. But the cross-vendor aspect
+might be.}
 
+Recently, OpenMP has been proposed for a portability layer use, and
+also specifically for implementing CUDA in~\cite{10.1145/3559009.3569687}.
+We believe OpenMP's is not optimal for this use, since its memory model
+doesn't support all the CUDA capabilities, unlike the Coarse Grained
+SVM available in OpenCL~\pj{Colleen (?) TODO: pls check}. It also
+suffers from being a high-level ``application-programmer-facing`` API,
+thus offers constructs and overheads for programmer-productivity which are
+unneccessary for a primarily portability layer API.
 
-\subsection{Device Program Representations} 
+Heterogeneous System Architecture (HSA) is an open specification
+that also defines a low level portability layer~\cite{HSA}. A key differentiating
+feature of HSA was that it standardized on shared virtual memory,
+making system-wide virtual memory addressing a required feature from
+implementations. In hindsight this requirement was ambitious and perhaps
+too early, as system wide virtual memory support is only recently becoming
+widely available and still usually requires explicit allocation or mapping
+calls from the programmer. HSA could have been a valid choice for a portability
+layer, but activity on it has seized with AMD using only selected parts of
+it in their software stack.
+
+Another potential option would be Vulkan~\cite{Vulkan}. It has a compute
+pipeline, which allows specifying general purpose compute kernels. The
+feature set of the compute kernels lacks many of the OpenCL's features
+necessary for CUDA \pj{such as...}, but it could be that in the future
+the feature gap gets narrower and it would become a viable option.
+Meanwhile, layering OpenCL on top of Vulkan is an interesting option to
+target the devices with only Vulkan support.
+
+Both LevelZero~\cite{LevelZero} and ROCr~\cite{ROCr} are lightweight hardware
+abstraction layers that could be useful in case they had more vendors
+supporting them actively. LevelZero has the benefit that it uses SPIR-V
+as the device program representation, which made it easy to add support
+to \hipstar for interfacing to LevelZero directly to control Intel GPU
+devices. ROCr, however, is only targeted to AMD GPUs and cannot ingest
+SPIR-V at the time of this writing~\pj{check this}.
+
+\subsection{Device Program Representations}
 \label{subsec:deviceProgramRepresentations}
 
 \pj{We can move some of this discussion to the compiler section.}
-Heterogeneous platforms suffer from the problem of device-side program description portability. There is a wide range of instruction-set architectures the kernels can target, and when the program is distributed in a binary form, the targets are known only at run time. Thus, to cover the format in which the device programs (kernels) are stored is critical, it should cover as many of the potential targets as possible. Unfortunately, at the time of this writing, there still seem to be no clear winner program representation in this regard and various portable implementations of  application-facing APIs are resorting to very fat binaries which store copies of the device program in multiple (virtual) instruction-set architectures to cover the various targets and offloading runtimes it might encounter at execution time. This is the case with~\cite{10.1145/3559009.3569687}, and used to be the case with hipSYCL (now called OpenSYCL)~\cite{10.1145/3529538.3530005}. 
+Heterogeneous platforms suffer from the problem of device-side program description portability. There is a wide range of instruction-set architectures the kernels can target, and when the program is distributed in a binary form, the targets are known only at run time. Thus, to cover the format in which the device programs (kernels) are stored is critical, it should cover as many of the potential targets as possible. Unfortunately, at the time of this writing, there still seem to be no clear winner program representation in this regard and various portable implementations of  application-facing APIs are resorting to very fat binaries which store copies of the device program in multiple (virtual) instruction-set architectures to cover the various targets and offloading runtimes it might encounter at execution time. This is the case with~\cite{10.1145/3559009.3569687}, and used to be the case with hipSYCL (now called OpenSYCL)~\cite{10.1145/3529538.3530005}.
 
 Recently OpenSYCL started storing kernels in LLVM~\cite{LLVM} Intermediate Representation (IR) instead of multiple different binaries depending on the target. In this scheme, LLVM IR is lowered to various target-dependent formats at runtime when the target is known~\cite{OpenSYCLfatbin}. This approach has benefits in comparison to the abundance of binaries in the another alternative, and works in theory, but it is also known that LLVM IR is not supposed to be a portable program representation as it can embed target-specific intrinsics, has target specific data layout and endianness among other challenges. Furthermore, LLVM IR is not guaranteed to be stable across LLVM versions, which means that the fat binaries should have access to an LLVM version the IR was generated with, which at worst requires to embed the LLVM library along and the required backends to the fat binary.\pj{recheck the paper after it's been published in IWOCL 23: Which LLVM IR target it uses in the stored LLVM bitcode?} In fact, the problems of LLVM IR not being target-independent and not being stable across LLVM versions was attempted to be addressed by earlier Standard Portable Intermediate Representation (SPIR) versions 1.2 and 2.0~\cite{SPIR2}. The first SPIR versions were designed to support OpenCL C language kernels and was based on defined versions of LLVM IR, but they were later obsoleted in favor of the SPIR-V~\cite{SPIRV} format used by \hipstar. The goal for SPIR-V is to provide a robust cross-vendor specified intermediate language which is not affected by LLVM upstream changes and that shares specification effort with the Vulkan API~\cite{Vulkan}.
 
-HSA specification defines an intermediate language called HSAIL and a binary representation called BRIG~\cite{HSAIL}. A key difference of HSAIL in comparison to the SPIR-V format \hipstar uses is that HSAIL had a fixed number of registers and an address space for spills unlike SPIR-V, which has infinite virtual registers due to being based on the Static Single Assignment (SSA)~\cite{SSA} representation. There was also a GCC-based frontend for consuming BRIGs in a target-portable fashion, but after activity on HSA quieted, the BRIG FE was removed from the upstream GCC source code repository in a May 2021 commit. 
+HSA specification defines an intermediate language called HSAIL and a binary representation called BRIG~\cite{HSAIL}. A key difference of HSAIL in comparison to the SPIR-V format \hipstar uses is that HSAIL had a fixed number of registers and an address space for spills unlike SPIR-V, which has infinite virtual registers due to being based on the Static Single Assignment (SSA)~\cite{SSA} representation. HSA made an intersting tactics to not define a higher-level
+programming language (like OpenCL C) for the device programs, but only standadized a low level IL.
+There was also a GCC-based frontend for consuming BRIGs in a target-portable fashion, but after activity on HSA quieted, the ``BRIG frontend'' was removed from the upstream GCC source code repository in a May 2021 commit.
 
 As a conclusion, while SPIR-V support from hardware vendors is not very extensive as of this writing, it seems to be still the best option for a cross-platform representation given it's an open standard defined democratically by multiple hardware vendors. In addition, thanks in part to good quality open source tooling support available and useful SPIR-V producers such as \hipstar and DPC++ appearing, the list of supported targets is likely growing in the future.
