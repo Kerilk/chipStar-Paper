@@ -79,17 +79,30 @@ series = {IWOCL 2017}
    note={\url{https://developer.nvidia.com/cuda-toolkit}},
 }
 
-@misc{OpenCL, 
+@misc{OpenCL,
    author={{Khronos\textsuperscript{\textregistered} OpenCL Working Group}},
-   title={{The OpenCL\texttrademark Specification}}, 
+   title={{The OpenCL\texttrademark Specification}},
    note={\url{https://registry.khronos.org/OpenCL/specs/3.0-unified/pdf/OpenCL_API.pdf} (accessed Apr. 12, 2023)},
 }
 
-@misc{HSAIL, 
+@misc{HSAIL,
    author={{Heterogeneous System Architecture Foundation}},
-   title={{HSA Programmer's Reference Manual: HSAIL Virtual ISA and Programming Model, Compiler Writer, and Object Format (BRIG)}}, 
+   title={{HSA Programmer's Reference Manual: HSAIL Virtual ISA and Programming Model, Compiler Writer, and Object Format (BRIG)}},
    note={\url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-PRM-1.2.pdf} (accessed Apr. 12, 2023)},
 }
+
+@misc{HSA,
+   author={{Heterogeneous System Architecture Foundation}},
+   title={{HSA} Platform System Architecture Specification},
+   note={\url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-SysArch-1.2.pdf} (accessed Apr. 13, 2023)},
+}
+
+@misc{HSART,
+   author={{Heterogeneous System Architecture Foundation}},
+   title={{HSA} Runtime Programmer's Reference Manual v1.1.1},
+   note={\url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-Runtime-1.1.1.pdf} (accessed Apr. 13, 2023)},
+}
+
 
 @article{SSA,
 author = {Cytron, Ron and Ferrante, Jeanne and Rosen, Barry K. and Wegman, Mark N. and Zadeck, F. Kenneth},
@@ -295,6 +308,16 @@ location = {Chicago, Illinois},
 series = {PACT '22}
 }
 
+@article{OpenCLTLP,
+  title={Exploiting task parallelism with OpenCL: a case study},
+  author={J{\"a}{\"a}skel{\"a}inen, Pekka and Korhonen, Ville and Koskela, Matias and Takala, Jarmo and Egiazarian, Karen and Danielyan, Aram and Cruz, Crist{\'o}v{\~a}o and Price, James and McIntosh-Smith, Simon},
+  journal={Journal of Signal Processing Systems},
+  volume={91},
+  pages={33--46},
+  year={2019},
+  publisher={Springer}
+}
+
 @inproceedings{10.1145/3529538.3530005,
 author = {Alpay, Aksel and Soproni, B\'{a}lint and W\"{u}nsche, Holger and Heuveline, Vincent},
 title = {Exploring the Possibility of a HipSYCL-Based Implementation of OneAPI},
@@ -302,7 +325,6 @@ year = {2022},
 isbn = {9781450396585},
 publisher = {Association for Computing Machinery},
 address = {New York, NY, USA},
-url = {https://doi-org.libproxy.tuni.fi/10.1145/3529538.3530005},
 doi = {10.1145/3529538.3530005},
 booktitle = {International Workshop on OpenCL},
 articleno = {10},

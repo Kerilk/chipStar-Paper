@@ -38,13 +38,14 @@ the key requirement to the underlying runtime API is to support
 the essential features of CUDA/HIP in order to exploit the
 potential perfromance benefits, for example, available via
 parallel and asynchronous execution of tasks, overlapping of
-data transfers with task execution. Furthermore, the runtime API
+data transfers with task execution, and by providing access to
+shared memory communication, if available. Furthermore, the runtime API
 should provide services to enhance performance portability of
 the implementation by allowing to query the capabilities of the
 devices to tune the execution to match the target's features.
 
-There are only a few choices for such a runtime API, especially
-if limiting oneself to alternatives that have support from
+There are not a large number of choices for such a runtime API, especially
+if limiting oneself to alternatives that enjoy official support from
 multiple vendors. One of programming models that has increased
 in popularity is SYCL~\cite{SYCL}, which is the default
 programming model of Intel's oneAPI software stack. SYCL
@@ -52,7 +53,7 @@ resembles CUDA in being a C++-based single-source API and
 could be a potential option for the runtime layer. It diverged
 from its original goal of an improved C++ binding to OpenCL
 to a more independent ecosystem with multi-backend implementations.
-However, we believe that OpenCL is better for a portability
+However, we consider OpenCL being better match for a portability
 layer use since it's a lightweight C API, has first class
 support from multiple vendors and defines device and platform
 queries that can be used to tune the execution at runtime. OpenCL
@@ -73,16 +74,17 @@ suffers from being a high-level ``application-programmer-facing`` API,
 thus offers constructs and overheads for programmer-productivity which are
 unneccessary for a primarily portability layer API.
 
-Heterogeneous System Architecture (HSA) is an open specification
-that also defines a low level portability layer~\cite{HSA}. A key differentiating
-feature of HSA was that it standardized on shared virtual memory,
+Heterogeneous System Architecture (HSA) is an open heteroegeneous platform
+specification that also defines a runtime API~\cite{HSA,HSART}.
+A key differentiating
+feature of HSA was that it standardizes on shared virtual memory,
 making system-wide virtual memory addressing a required feature from
 implementations. In hindsight this requirement was ambitious and perhaps
 too early, as system wide virtual memory support is only recently becoming
 widely available and still usually requires explicit allocation or mapping
 calls from the programmer. HSA could have been a valid choice for a portability
 layer, but activity on it has seized with AMD using only selected parts of
-it in their software stack.
+it in their software stack (the ROCr runtime compontent).
 
 Another potential option would be Vulkan~\cite{Vulkan}. It has a compute
 pipeline, which allows specifying general purpose compute kernels. The
@@ -92,13 +94,13 @@ the feature gap gets narrower and it would become a viable option.
 Meanwhile, layering OpenCL on top of Vulkan is an interesting option to
 target the devices with only Vulkan support.
 
-Both LevelZero~\cite{LevelZero} and ROCr~\cite{ROCr} are lightweight hardware
-abstraction layers that could be useful in case they had more vendors
-supporting them actively. LevelZero has the benefit that it uses SPIR-V
-as the device program representation, which made it easy to add support
-to \hipstar for interfacing to LevelZero directly to control Intel GPU
-devices. ROCr, however, is only targeted to AMD GPUs and cannot ingest
-SPIR-V at the time of this writing~\pj{check this}.
+Level Zero~\cite{l0} is a hardware
+abstraction layer that could be a valid option for a portability layer in
+case it had more vendors than Intel supporting it officially. For \hipstar,
+Level Zero has a benefit that it uses the open standard SPIR-V as the device program
+representation, which made it easy to add support for interfacing with
+Level Zero directly to control Intel GPU devices as an alternative
+to OpenCL~\cite{HIPLZ}. 
 
 \subsection{Device Program Representations}
 \label{subsec:deviceProgramRepresentations}
