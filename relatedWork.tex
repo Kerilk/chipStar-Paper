@@ -68,8 +68,7 @@ might be.}
 Recently, OpenMP has been proposed for a portability layer use, and
 also specifically for implementing CUDA in~\cite{10.1145/3559009.3569687}.
 We believe OpenMP's is not optimal for this use, since its memory model
-doesn't support all the CUDA capabilities, unlike the Coarse Grained
-SVM available in OpenCL~\pj{Colleen (?) TODO: pls check}. It also
+doesn't support shared virtual memory \pj{Colleen (?) TODO: pls check}. It also
 suffers from being a high-level ``application-programmer-facing`` API,
 thus offers constructs and overheads for programmer-productivity which are
 unneccessary for a primarily portability layer API.
