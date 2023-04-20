@@ -50,6 +50,11 @@
 % IEEE policy on preprints seems to be reasonable:
 % https://journals.ieeeauthorcenter.ieee.org/become-an-ieee-journal-author/publishing-ethics/guidelines-and-policies/submission-and-peer-review-policies/#electronic-reprints
 
+% https://journals.ieeeauthorcenter.ieee.org/submit-your-article-for-peer-review/the-ieee-article-submission-process/
+% TPDS manuscript types and submission length guidelines are described below. All page limits include references and author biographies. For regular papers, pages in excess of these limits after final layout of the accepted manuscript is complete are subject to Mandatory Overlength Page Charges (MOPC). Note: All supplemental material must be submitted as separate files and must not be included within the same PDF file as the main paper submission. There is no page limit on supplemental files. 
+
+% Regular paper – 12 double column pages (Submissions may be up to 18 pages in length, subject to MOPC. All regular paper page limits include references and author biographies.)
+
 \begin{document}
 
 \title{hipstar: Compiling HIP/CUDA Programs On an Open Cross-Vendor Standard Software Stack}
@@ -211,7 +216,7 @@ The CUDA/HIP event API does not directly map to the OpenCL event API, since in C
 
 \pj{TODO Michal, Brice (?): Describe the HIP-OpenCL and HIP-SYCL interoperability APIs and their use cases.}
 
-The native interoperability API can be used to initialize HIP context (with assigned device \& command queue) from a set of native (LevelZero/OpenCL) object handles, or in the opposite direction to retrieve a set of native handles from an existing HIP context. Thread-safe use of handles is currently left to the application (which should be non-issue with OpenCL since it is thread-safe). Additionally, there are two APIs that create a HIP event from native event handle, and vice-versa. These can be used for chaining HIP code with native code while maintaining asynchronous execution.
+The native interoperability API can be used to initialize HIP context (with assigned device \& command queue) from a set of native (LevelZero/OpenCL) object handles, or in the opposite direction to retrieve a set of native handles from an existing HIP context. Thread-safe use of handles is currently left to the application (which should be non-issue with OpenCL since it is thread-safe). Additionally, there are two APIs that create a HIP event from native event handle, and vice-versa. These can be used for interoperability of HIP code with native code while maintaining asynchronous execution.
 
 %\subsection{OpenCL-CUDA/HIP Compatibility Gaps}
 
@@ -233,7 +238,7 @@ The native interoperability API can be used to initialize HIP context (with assi
 %
 %\item{hipEventCreateWithFlags()}: provides per-event control of the synchronize behaviour (yield thread/spin wait). However, these APIs affect only performance, not correctness, thus can be implemented as no-operations.
 
-% Pekka> Cannot we really implement this without an extension even if we had kernel metadata to traverse? \mb{possibly, if we figure out the correct alignments & padding}
+% Pekka> Cannot we really implement this without an extension even if we had kernel metadata to traverse? \mb{possibly, if we can always figure out the correct alignments & padding}
 %\item {hipModuleLaunchKernel()}: passing args by ``extra'' parameter requires an API for setting all kernel arguments at once.\pj{a new clEnqueueNDRange variation with a HSA-style-specified exact layout argument buffer layout might be useful in any case.}
 
 %\item {hipGraph API}: the API to create, update & launch graphs. The existing cl_khr_command_buffer extension is not sufficient, since we need to work with SVM. (discussed below in the "opencl and spirv extensions" section).
@@ -244,7 +249,7 @@ The native interoperability API can be used to initialize HIP context (with assi
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Device Program Compilation}
+\section{Compilation}
 \label{section:compilation}
 
 % TODO: points related to compilation, how we make it portable and what type
@@ -326,7 +331,7 @@ cl\_ext\_relaxed\_printf\_address\_space &  Proposed for the future to unify pri
     \hline
 cl\_intel\_required\_subgroup\_size & When calling warp-level primitives that depend on the 32/64 warp size or the thread id ordering. & Promotion to a generalized 'khr' extension being discussed. \\ 
     \hline
-cl\_intel\_unified\_shared\_memory & When available, used for optimizing shared memory usage. \pj{TBD} & Public. \\
+cl\_intel\_unified\_shared\_memory & When available, used for optimizing memory management. \pj{TBD} & Public. \\
    \hline
 cl\_khr\_command\_buffer            & Optimized implementation of CUDA graph execution. Extended with SVM commands. & Public. \\
     \hline 
@@ -367,15 +372,15 @@ Most of the extensions are straightforward and the explanation in the table cell
 
 ...
 The Supreme Court of the United States ruled in April 5, 2021
-in the Google LLC vs. Oracle America, Inc. case that copying Java API for use in the Android OS was considered ``fair use'' in case it's done for compatibility purposes~\cite{JavaSupreme}:
+in the Google LLC vs. Oracle America, Inc. case that copying Java API for use in the Android OS was considered ``fair use'' in case it's done for compatibility purposes:
 
 \begin{quote}
-Google’s copying of the Java SE API, which included only those
+``Google’s copying of the Java SE API, which included only those
 lines of code that were needed to allow programmers to put their accrued talents to work in a new and transformative program, was a fair
-use of that material as a matter of law.
+use of that material as a matter of law.''~\cite{JavaSupreme}
 \end{quote}
 
-However, since we, the \hipstar developers are engineers, not lawyers, we wanted to be extra careful that copyrights were not disrespected in any jurisdiction when adding support for the direct CUDA API calls by using an implementation approach where only the programmer's manual was consulted for the API reference when writing the CUDA compatibility headers to the \hipstar code base. 
+However, since we, the \hipstar developers are engineers, not lawyers, we wanted to be extra careful that copyrights were not disrespected in any jurisdiction when adding support for direct CUDA API calls by using an implementation approach where only the programmer's manual was consulted for the API reference when writing the CUDA compatibility headers to the \hipstar code base. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -422,22 +427,6 @@ Fortunately there are now various active OpenCL implementations that can be used
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Supporting Newer CUDA Features}
-\label{section:directCUDA}
-
-HIP is a subset of CUDA features, roughly at version 8~\pj{check this}. Thus, it doesn't include support some of the newer features which can utilize some of the more advanced capabilities of the NVIDIA GPU platforms. Some of these features are difficult to implement efficiently on other vendors' GPUs, and since GPU offloading is primarily done with performance in mind, a functional, but inefficient implementation is less interesting.
-
-However, for the purpose of completeness, it is interesting to highlight some of the more useful newer features in later CUDA versions, and consider implementation strategies for future work.
-
-\pj{Discuss how easy it is to add direct CUDA support too, but highlight the compatibility gaps in the next section.}
-\pj{Cite and discuss the USA highest court legal ruling related to Java API, emphasize that not a lawyer, and not a focus.}
-
-\pj{Discuss features specific to CUDA, from the doc I wrote in Parmance.}
-
-
-% TODO: the OpenCL extensions identified and proposed.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Debugging and Profiling Support}
 \label{section:debuggingAndProfiling}
@@ -494,34 +483,35 @@ In order to validate the drop-in compatibility level of \textit{hipstar}, we por
 \begin{table*}[]
     \centering
     \settowidth\rotheadsize{Warp-level primitives}
-    \begin{tabular}{|c|c|c|c|c||c|c|c|c|c|c|}
+    \begin{tabular}{|c|c|c|c|c||c|c|c|c|c|c|c|}
     \hline
                                            &
                    \rothead{Shared memory} &
                    \rothead{\_\_syncthreads()} &
+                   \rothead{Unified Memory} &
                    \rothead{Warp-level primitives} & \rothead{...} & \rothead{cuDNN} & \rothead{CUDA Graphs} & \rothead{hipBLAS} & \rothead{hipSOLVER} & \rothead{libCEED} & \rothead{rocPRIM} \\    
     \hline
     \hline    
-       CP2K        & &  & &  &  &  &  &  &  &  \\
+       CP2K        & &  & &  &  & &  &  &  &  &  \\
     \hline
-       Exabiome    & &  & &  &  &  &  &  &  &  \\
+       Exabiome    & &  & &  &  & &  &  &  &  &  \\
     \hline
-       GAMESS      & \x & \x & &  &  &  & \x & \x &  & \\ 
+       GAMESS      & \x & \x &  & &  &  &  & \x & \x &  & \\ 
     \hline
-       Pytorch-HIP & &  & &  &  &  &  &  &  & \\       
+       Pytorch-HIP & &  & &  &  & &  &  &  &  & \\       
     \hline
     \hline
-       cuDNN       & &  & &  &  &  &  &  &  & \\        
+       cuDNN       & &  & &  &  & &  &  &  &  & \\        
     \hline
-       CUDA Graphs & &  & &  &  &  &  &  &  & \\    
+       CUDA Graphs & &  & &  &  & &  &  &  &  & \\    
     \hline
-       hipBLAS     & &  & &  &  &  &  &  &  & \\
+       hipBLAS     & &  & &  &  & &  &  &  &  & \\
     \hline    
-       hipSOLVER   & &  &  \x & &  &  &  &  &  &  \\       
+       hipSOLVER   & &  &  \x & & &  &  &  &  &  &  \\       
     \hline
-       libCEED     & &  &  &  &  &  &  &  &  & \\
+       libCEED     & &  &  &  & & &  &  &  &  & \\
     \hline
-       rocPRIM     & &  & \x & &  &  &  &  &  & \\
+       rocPRIM     & &  & \x & & & &  &  &  &  & \\
     \hline        
     \end{tabular}
     \caption{The applications and libraries ported on \hipstar and how each of them exercises different technically non-trivial CUDA/HIP features and \hipstar-ported libraries. \pj{Let's fill the matrix up after the table structure has stabilized.}}
@@ -530,7 +520,7 @@ In order to validate the drop-in compatibility level of \textit{hipstar}, we por
 
 \subsection{CP2K}
 
-\pj{TODO who writes?}
+\pj{TODO Rahul?}
 
 \subsection{Exabiome}
 
@@ -540,9 +530,15 @@ In order to validate the drop-in compatibility level of \textit{hipstar}, we por
 
 \pj{TODO: Colleen? Evaluate how well it works in terms of functionality and compare to another platform in perf.}
 
+GAMESS (General Atomic and Molecular Electronic Structure System) \cite{gamess,gamess2} is a quantum chemistry software package which implements many electronic structure methods. The code is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods been implemented in CUDA which scales to 4096 nodes on Summit, a V100-based supercomputer \cite{gamess_cuda1, gamess_cuda2, summit}. {TODO mention about how ported to HIP } Here we focus on the HF method. 
+
+The HF algorithm used by GAMESS is described extensively in Ref. \cite{gamess_cuda1} for the CUDA implementation. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.  The HF method determines the molecular energy of a system by solving a set of non-linear eigenvalue equations iteratively.  It primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed. The two electron integrals are grouped into different classes, depending on the angular momentum of the basis functions used. The basis functions here are $s-$ ,$p-$, and $d-$, where $s$ is least complex and $d$ is the most complex. The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs and total over 20,000 lines of HIP/CUDA code. hipBLAS and hipSOLVER calls are used to form intermediates.
+
+In terms of functionality, the HF code compiles and run correctly with CHIP-SPV for basis sets which only use $s$ and $p$ functions. For larger basis sets containing $d$ functions there is currently a runtime error.
+
 \subsection{libCEED}
 
-\pj{TODO: Colleen?}
+\pj{TODO: Paulius?}
 
 \subsection{Pytorch-HIP}
 
@@ -584,12 +580,28 @@ In this section we evaluate the performance of \textit{hipstar}  with specific f
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% This doesn't fit as the page limit is only 12pp. If we resubmit to another journal, it's interesting info to add and can be easily copy-pasted from the report:
+
+%\section{Supporting Newer CUDA Features}
+%\label{section:directCUDA}
+
+%HIP is a subset of CUDA features, roughly at version 8~\pj{check this}. Thus, it doesn't include support some of the newer features which can utilize some of the more advanced capabilities of the NVIDIA GPU platforms. Some of these features are difficult to implement efficiently on other vendors' GPU features, and since GPU offloading is primarily done with performance improvements in mind, a functional, but inefficient implementation is less interesting.
+
+%However, for the purpose of completeness, it is interesting to highlight some of the more useful newer features in later CUDA versions, and consider implementation strategies for future work.
+
+%\pj{Discuss features specific to CUDA, from the doc I wrote in Parmance.}
+
+
+% TODO: the OpenCL extensions identified and proposed.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Conclusions and Future Work}
 \label{section:conclusions}
 
 \pj{TODO: Drop-in/link-time replacement (CUDA binary compatibility)?}
-\pj{TODO: Consider "obese" binaries: Allow adding target-specific binaries (but via the OpenCL binary interface) to the binary for faster initial launch.}
-\pj{TODO: on-demand migrated UM (via Fine Grained system SVM). We could implement this on CPU drivers for enabling testing such codes.}
+\pj{TODO: Reconsider "obese" binaries: Allow adding additional target-specific binaries (but via the OpenCL binary interface) to the binary for faster initial launch.}
+\pj{TODO: on-demand migrated UM (via Fine-Grained system SVM). We could implement this on CPU drivers for enabling testing such codes. Also Rusticl is adding FG SSVM support to some GPUs.}
 \bibliography{IEEEabrv,hipstar}
 \bibliographystyle{IEEEtran}
 
