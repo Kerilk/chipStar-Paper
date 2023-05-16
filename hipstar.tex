@@ -3,7 +3,7 @@
 \usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{array}
-\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+%\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
 \usepackage{textcomp}
 \usepackage{stfloats}
 \usepackage{url}
@@ -14,6 +14,9 @@
 \usepackage{amssymb}
 \usepackage{xspace}
 \usepackage{textcomp}
+%\usepackage{subfigure}
+\usepackage{caption}
+\usepackage{subcaption}
 
 % https://tex.stackexchange.com/questions/326897/vertical-alignment-of-a-turned-cell
 \usepackage{rotating}
@@ -34,6 +37,7 @@
 \newcommand{\pj}[1]{ \mynote{PJ}{#1}{blue} }
 \newcommand{\bv}[1]{ \mynote{BV}{#1}{green} }
 \newcommand{\mb}[1]{ \mynote{MB}{#1}{cyan} }
+\newcommand{\cb}[1]{ \mynote{CB}{#1}{magenta} }
 
 \newcommand{\hiplz}{\texttt{HIPLZ}\xspace}
 \newcommand{\hipcl}{\texttt{HIPCL}\xspace}
@@ -57,18 +61,18 @@
 
 \begin{document}
 
-\title{hipstar: Compiling HIP/CUDA Programs On an Open Cross-Vendor Standard Software Stack}
+\title{hipstar: Compiling HIP/CUDA Programs to an Open Cross-Vendor Standard Software Stack}
 
 %\author{pekka.jaaskelainen }
 %\date{March 2023}
 
-\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Brice Videau, Colleen Bertoni, Kevin Harms, Paulius Velesko, Philip Roth, Rahulkumar Gaytri, Jisheng Zhao
+\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Brice Videau, Colleen Bertoni, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao
         % <-this % stops a space
 \thanks{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu and Sarbojit Sarkar are with Intel Corporation. \textit{Corresponding author: Pekka Jääskeläinen, email: pekka.jaaskelainen@intel.com}.}
 \thanks{Pekka Jääskeläinen is also with Tampere University, Finland. }
 \thanks{Paulius Velesko is with Pagan LC.}
 \thanks{Brice Videau, Colleen Bertoni and Kevin Harms are with Argonne National Laboratory, ...}
-\thanks{Philip Roth is with Oak Ridge National Laboratory, ... }
+\thanks{Philip C. Roth is with Oak Ridge National Laboratory, ... }
 \thanks{Rahulkumar Gaytri is with National Energy Research Scientific Computing Center, ...}
 \thanks{Jisheng Zhao is with Georgia Institute of Technology, Atlanta, Georgia.}
 \thanks{\pj{The authors are not in any particular order. I put myself as 1st author as I'm leading the writing, and then I ordered the co-authors according to their affil.}}
@@ -155,15 +159,17 @@ case with OpenCL's basic buffer management functionality. This presents a diverg
 from the basic OpenCL specification for device memory management, which only provides a buffer
 management API (\textbf{clCreateBuffer()} and others) which returns opaque handles (cl\_mem).
 
+\pj{About CUDA's "implicit address space" vs. generic of OpenCL/SPIR-V?}
+
 The opaque buffer handles cannot be used to implement CUDA device memory management
 because it is not possible perform pointer arithmetics or pass addresses in other data structures,
 which is allowed by CUDA. In order to implement these capabilities, we utilized the
 Shared Virtual Memory (SVM) API of the OpenCL specification to allocate device pointers.
 The SVM API allocates memory and returns a raw pointer to a shared virtual address space
-region. SVM's ``Coarse Grained buffer'' variant is mandatory in the OpenCL 3.0 specification, and
+region. SVM's ``Coarse Grained buffer'' variant
 suffices to implement the basic device memory management features of CUDA. However, using SVM for
 implementing device memory management has a drawback that the device must support SVM (map
-the allocated regions to the same addresses in the host point of view) although physical device
+the allocated regions to the same addresses in the host point of view) although just providing accesses physical device
 pointers would suffice. This means that the \hipstar implementation is actually
 implementing CUDA's Unified Memory model by default.%~\pj{TODO: Utilize USM device-side allocations to optimize the device-only allocations?}.
 
@@ -173,7 +179,7 @@ referring to the SVM allocations must either use the SVM allocations as argument
 be explicitly denoted to refer to allocations used indirectly. The latter poses a challenge
 since in principle any kernel can refer to any previous allocation as CUDA device pointers can
 be passed inside data structures or global variables. For coarse grained SVM,
-OpenCL's \textbg{clSetKernelExecInfo()} must be used to list all potentially used SVM allocations.
+OpenCL's \textbf{clSetKernelExecInfo()} must be used to list all potentially used SVM allocations.
 This poses a possible performance overhead since the \hipstar runtime must play it safe
 and register all possible previous allocations to any kernel, unless proven that the
 kernel doesn't refer to a particular allocation. It can then lead to unnecessary data
@@ -181,7 +187,7 @@ synchronizations between the host and the device memories.
 %\pj{TODO: optimize via a simple kernel analysis.}
 
 CUDA provides an API to \textit{pin} memory so its kept resident in the device memory and
-accessible directly by the host, and is not swapped out to disk. The primary APIs to this functionaly are
+accessible directly by the host, and is not swapped out to disk. The primary APIs to this functionality are
 \textbf{cudaHostAlloc()} and \textbf{cudaHostRegister()}. The former allocates pinned
 memory directly and the latter pins a previous device allocation. \textbf{cudaHostAlloc()}
 is simple to implement with coarse grained SVM since, by coincidence of using
@@ -204,6 +210,8 @@ on the Unified Memory allocations. This frees the programmer from the need to pe
 allocation and synchronization calls. This functionality maps to the Fine-Grained System SVM of OpenCL,
 but since its support by hardware and drivers is very rare at the time of this writing, it is not
 yet implemented by \hipstar.
+
+\pj{TODO: describe how we utilize USM to optimize the memory management.}
 
 \subsection{Task Synchronization}
 
@@ -293,21 +301,23 @@ The base OpenCL specification, on the other hand, doesn't have a warp concept, b
 % Maybe also in the title of the paper.
 %\pj{Pekka TODO: Non-uniform primitives.}
 
-\subsection{Kernel Library}
+\subsection{Kernel Built-ins}
 
-\pj{Pekka TODO: This is a verbatim copy from HIPCL, to update:}
-The \textit{hipstar} kernel library is an implementation of the HIP math API, by using the OpenCL C math builtins, where possible.
-Many of the interfaces in the math API have an equivalent OpenCL builtin. There are some functions which don't map directly, and thus require software based emulation:
-
-\pj{TODO: About the textures implementation.}
-\pj{TODO: About the CUDA intrinsics and their accuracy requirements not mapping to relaxed math limits of OpenCL and the native* OpenCL intrinsics not having any accuracy req. at all.}
-\mb{TODO there is also a lot of math "intrinsics" - which i think map directly to GPU instructions in CUDA - and most of these are not implemented (a few have a native\_XYZ equivalent in OpenCL)}
+The \textit{hipstar} kernel library  implements the HIP math API, by using the OpenCL C math builtins, where possible.\pj{Something for Paulius to update after the rework?}
+A lot of the functions in the math API have an equivalent OpenCL builtin with adequate accuracy guarantees. However, there are a few notable functions which don't map directly, and thus require software based emulation:
 
 \begin{itemize}
 
 \item {Atomics on floating-points}: Do not exist in OpenCL, though they can be implemented e.g. with a CAS loop, with a performance penalty.\pj{TODO: We should. Slow is better than nothing at all.} \mb{this (CAS loop implementation) was already done in HIPCL time. There are also two SPIRV extensions: SPV\_EXT\_shader\_atomic\_float\_add \& SPV\_EXT\_shader\_atomic\_float\_min\_max, and Level Zero has an extension "ZE\_extension\_float\_atomics" so we should somehow use that. }
 
 \end{itemize}
+
+
+\pj{TODO: About the textures implementation.}
+\pj{TODO: About the CUDA intrinsics and their accuracy requirements not mapping to relaxed math limits of OpenCL and the native* OpenCL intrinsics not having any accuracy req. at all.}
+\pj{TODO: Also the basic math seems to differ in accuracy with CUDA offering higher accuracy in some cases (https://github.com/CHIP-SPV/chip-spv/issues/222). Discuss the challenges it poses here.}
+\mb{TODO there is also a lot of math "intrinsics" - which i think map directly to GPU instructions in CUDA - and most of these are not implemented (a few have a native\_XYZ equivalent in OpenCL)}\pj{See above discussion. They cannot be used as default because their accuracy is not defined at all.}
+
 
 \subsection{OpenCL and SPIR-V Extensions}
 
@@ -332,7 +342,7 @@ cl\_ext\_relaxed\_printf\_address\_space &  Proposed for the future to unify pri
     \hline
 cl\_intel\_required\_subgroup\_size & When calling warp-level primitives that depend on the 32/64 warp size or the thread id ordering. & Promotion to a generalized 'khr' extension being discussed. \\ 
     \hline
-cl\_intel\_unified\_shared\_memory & When available, used for optimizing memory management. \pj{TBD} & Public. \\
+cl\_intel\_unified\_shared\_memory & When available, is used for optimized memory management.  & Public. \\
    \hline
 cl\_khr\_command\_buffer            & Optimized implementation of CUDA graph execution. Extended with SVM commands. & Public. \\
     \hline 
@@ -432,13 +442,20 @@ Fortunately there are now various active OpenCL implementations that can be used
 \section{Debugging and Profiling Support}
 \label{section:debuggingAndProfiling}
 
-Thanks to using the open standard OpenCL as the portability layer, various debugging and profiling tooling options are available to use with little to no additional effort. The following discusses a set of tools that were successfully tested and adopted for $hipstar$ for profiling and debugging HIP/CUDA programs.
+Thanks to using the open standard OpenCL as the portability layer, various debugging and profiling tooling options are available to use with little to no additional effort. The following discusses a set of tools that were successfully adopted and used through $hipstar$.
 
 \subsection{Profiling Tools}
 
-\subsubsection{VTune}
+% VTune is rather Intel device-specific, uses its monitoring
+% interfaces. We cannot provide
+% much on top of OpenCL directly for
+% wider device support since it doesn't
+% have a monitoring API. The only
+% data is the profiling time stamps
+% from profiling queues.
+%\subsubsection{VTune}
 
-\pj{TODO Paulius?}
+%\pj{TODO Paulius?}
 
 \subsubsection{Tracing Heterogeneous APIs (THAPI)}
 
@@ -471,12 +488,16 @@ Thanks to using the open standard OpenCL as the portability layer, various debug
 
 \pj{Back to CUDA via PoCL-CUDA}
 
+\subsection{PoCL-Remote}
+
+\pj{This could be an interesting curiosity as soon as we (finally!) get PoCL-R open sourced.}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Application Portability Validation}
+\section{Compatibility Validation}
 \label{section:applications}
 
-In order to validate the drop-in compatibility level of \textit{hipstar}, we ported a set of well-known applications and libraries used widely in HPC domain that are commonly used with CUDA or HIP applications. The applications and which features or libraries of \hipstar they use are shown in Table~\ref{tab:applications}.
+In order to assess the  compatibility level of \textit{hipstar}, we ported a set of well-known applications and libraries used widely in HPC domain that are commonly used with CUDA or HIP applications. The applications and which features or libraries of \hipstar they use are shown in Table~\ref{tab:applications}.
 
 \newcommand{\x}[0]{\checkmark}
 
@@ -529,13 +550,19 @@ In order to validate the drop-in compatibility level of \textit{hipstar}, we por
 
 \subsection{GAMESS}
 
-\pj{TODO: Colleen? Evaluate how well it works in terms of functionality and compare to another platform in perf.}
+\pj{TODO: Colleen? Evaluate how well it works in terms of functionality and compare to another platform in perf.} 
 
-GAMESS (General Atomic and Molecular Electronic Structure System) \cite{gamess,gamess2} is a quantum chemistry software package which implements many electronic structure methods. The code is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods been implemented in CUDA which scales to 4096 nodes on Summit, an Nvidia V100-based supercomputer \cite{gamess_cuda1, gamess_cuda2, summit}. {TODO mention about how ported to HIP } Here we focus on the HF method. 
+GAMESS (General Atomic and Molecular Electronic Structure System) \cite{gamess,gamess2} is a quantum chemistry software package which implements many electronic structure methods. 
+% The code is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods been implemented in CUDA which scales to 4096 nodes on Summit, an Nvidia V100-based supercomputer \cite{gamess_cuda1, gamess_cuda2, summit}. {TODO mention about how ported to HIP } Here we focus on the HF method. 
 
-The HF algorithm used by GAMESS is described extensively in Ref. \cite{gamess_cuda1} for the CUDA implementation. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.  The HF method determines the molecular energy of a system by solving a set of non-linear eigenvalue equations iteratively.  It primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed. The two electron integrals are grouped into different classes, depending on the angular momentum of the basis functions used. The basis functions here are $s-$ ,$p-$, and $d-$, where $s$ is least complex and $d$ is the most complex. The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs and total over 20,000 lines of HIP/CUDA kernel code. hipBLAS and hipSOLVER calls are used to form intermediates. The main hipBLAS calls are hipblasDscal, hipblasDgemm, hipblasDcopy, hipblasDaxpy, hipblasDdot, hipblasDgemv, hipblasDgeam, and the main hipSOLVER call is hipsolverDsyevd.
+\pj{Thanks COlleen. Since we likely will lack the space in this paper we might keep the description of the GAMESS itself short and focus on the porting aspects and features it requires from CUDA/HIP. This is good.} \cb{Thanks for the comments, I updated the section taking in account your comments. Let me know if I missed something. Thanks!}
+Here we focus on the Hartee-Fock (HF) algorithm used by a CUDA library in GAMESS (described extensively in Ref. \cite{gamess_cuda1}) which has been ported to HIP \cb{TODO find some reference for the porting effort}. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.  The HF method determines the molecular energy of a system by solving a set of non-linear eigenvalue equations iteratively.  It primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed. 
+% I'm ok to remove the discussion of the basis functions if the code works for all of them :) The two electron integrals are grouped into different classes, depending on the angular momentum of the basis functions used. The basis functions here are $s-$ ,$p-$, and $d-$, where $s$ is least complex and $d$ is the most complex. 
+The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs and total over 20,000 lines of HIP/CUDA kernel code.\pj{From this paper's perspective this sentence is very essential: The amount of code lines we successfully compile and run.} As noted in Table \ref{tab:applications}, the code uses shared memory, with \_\_syncthreads() calls to ensure copying values from global memory to shared memory completed for the threadblock before using it.
+hipBLAS and hipSOLVER calls are used to form intermediates. The main hipBLAS calls are hipblasDscal, hipblasDgemm, hipblasDcopy, hipblasDaxpy, hipblasDdot, hipblasDgemv, hipblasDgeam, and the main hipSOLVER call is hipsolverDsyevd.\pj{From these it would be good to summarize for example, that they cover the key blas functionality.} These are used at each iteration of the HF algorithm to (among other things) diagonalize the Fock matrix and construct the density matrix, which are key blas functionalities in the HF algorithm.
 
 In terms of functionality, the HF code compiles and run correctly with CHIP-SPV for basis sets which only use $s$ and $p$ functions. For larger basis sets containing $d$ functions there is currently a runtime error.
+\cb{Do you think it is worth it to discuss the \_\_syncthreads issue here? My thought is that another large benefit of having this second, independent implementation of HIP allowed us to see that the HIP documentation is a little ambiguous or deficient in how it describes some things (like syncthreads)}\pj{You mean the "or exited" clause? Yes it could be useful as it's a finding while porting an app.}
 
 \subsection{libCEED}
 
@@ -546,6 +573,8 @@ In terms of functionality, the HF code compiles and run correctly with CHIP-SPV 
 \pj{TODO: Henry?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 \section{Performance Evaluation}
 \label{section:performance}
@@ -563,10 +592,32 @@ In this section we evaluate the performance of \textit{hipstar}  with specific f
 
 \subsection{Layering Overheads}
 
-\pj{TODO: Evaluate how much overhead on top of straight HIP/CUDA to CUDA vs. through PoCL-CUDA}
-\pj{TODO: Evaluate how much overhead going through PoCL-level0 incurs on top of straight LZ BE}
+The design of \hipstar enables different runtimes to be utilized as backends. In addition to the OpenCL backend, there is also a direct Level Zero backend which can be utilized to control Intel GPU devices. While a layered software stack, as depicted in Fig.~\ref{fig:layered-sw-stack} provides clean division of responsibilities and enables portability via a cross-vendor supported API layer, interfacing directly to vendor-specific lower level APIs such as LZ might have performance benefits.
 
-\pj{Straight to CUDA vs. CUDA to HIP to hipstar to OpenCL + to OpenCL to PoCL-CUDA to CUDA}
+To evaluate the costs of layering on top of OpenCL, we utilized the PoCL's experimental Level Zero driver to measure layered OpenCL calls to the Level Zero library. We utilized a set of benchmark applications \pj{todo describe} on two different Level Zero-supporting devices \pj{todo describe} and using the direct Level Zero execution as a baseline. As another comparison platform we utilized Intel's OpenCL driver.
+
+Fig.~\ref{fig:lz-comparison} shows the comparison results. \pj{todo: to analyze after have the final numbers closer to the submission. There are inoptimalities we will fix before both in the LZ backend and in PoCL-LZ.}
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.5\textwidth}
+         \centering             
+         \includegraphics[width=0.9\textwidth]{figs/LZ-BE-comparison-Intel-iGPU.pdf}
+         \caption{iGPU}
+         \label{fig:lz-comparison-igpu}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.5\textwidth}
+         \centering
+        \includegraphics[width=1.0\textwidth]{figs/LZ-BE-comparison-Intel-dGPU.pdf}
+         \caption{dGPU}
+         \label{fig:lz-comparison-igpu}
+     \end{subfigure}
+     \caption{\hipstar direct Level Zero backend execution time (normalized to 100) in comparison to the \hipstar OpenCL backend on top of Intel OpenCL and the layered PoCL-Level0 driver with two different GPUs.}
+     \label{fig:lz-comparison}
+\end{figure}
+
+\pj{TODO: Straight to CUDA vs. CUDA to HIP to hipstar to OpenCL + to OpenCL to PoCL-CUDA to CUDA}
 
 \subsection{Graphs on Command Buffers}
 
