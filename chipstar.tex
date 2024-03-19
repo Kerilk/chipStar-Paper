@@ -14,9 +14,13 @@
 \usepackage{amssymb}
 \usepackage{xspace}
 \usepackage{textcomp}
+\usepackage{svg}
 %\usepackage{subfigure}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{draftwatermark}
+\SetWatermarkText{DRAFT}
+\SetWatermarkScale{1}
 
 % https://tex.stackexchange.com/questions/326897/vertical-alignment-of-a-turned-cell
 \usepackage{rotating}
@@ -48,7 +52,7 @@
 \newcommand{\lz}{\texttt{L0}\xspace}
 \newcommand{\sycl}{\texttt{SYCL}\xspace}
 \newcommand{\cuda}{\texttt{CUDA}\xspace}
-\newcommand{\chipstar}{\textit{chipstar}\xspace}
+\newcommand{\chipstar}{\textit{chipStar}\xspace}
 
 \hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
 
@@ -62,7 +66,7 @@
 
 \begin{document}
 
-\title{chipstar: Compiling HIP/CUDA Programs to an Open Cross-Vendor Standard Software Stack}
+\title{chipStar: A Compiler and Runtime for Cross-Vendor Portable HIP/CUDA Based on Open Standards}
 
 %\author{pekka.jaaskelainen }
 %\date{March 2023}
@@ -217,6 +221,8 @@ yet implemented by \chipstar.
 
 \pj{TODO: describe how we utilize USM to optimize the memory management - as soon as the USM patch gets in.}
 
+\pj{Indirect access optimizations. The simplest allocation method in SYCL is the buffer allocation for which there is no match in HIP/CUDA, but the simplest one is cudaMalloc() which requires pointer-based access also on the device side. To optimize unnecessary indirect access annotations, we implement...}
+
 \subsection{Task Synchronization}
 
 ...
@@ -274,14 +280,14 @@ A major design decision for \textit{chipstar} was to choose a \textit{portable} 
 
 Overall, SPIR-V~\cite{SPIRV} seemed the best choice for the \textit{chipstar}’s ``fat binary'' format’s IR.\pj{emphasize that it's a cross-vendor committee driven standard, in good and in bad} It is supported both in later OpenCL standard as well as Vulkan. It also has good LLVM-based conversion tools available as open source. Therefore, SPIR-V support was set early on as a requirement for \textit{chipstar} supported OpenCL targets.  Unfortunately, its consumption support is not widespread in OpenCL implementations at the time of this writing, but hopefully this will change as the OpenCL implementations and input producers such as \textit{chipstar} mature. Notably, neither AMD's nor NVIDIA's OpenCL drivers support SPIR-V at the time of this writing. This should not be a significant problem in terms of HIP/CUDA portability since both platforms have direct support for them through their own implementations.
 
-\subsection{Clang/LLVM-based Compilation Flow}
+\subsection{Compilation Flows}
 
-The compilation flow of \chipstar is based on the LLVM Project's~\cite{LLVM} Clang~\cite{Clang} frontend. The compiliation process is shown in Fig.\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce SPIR-V binaries instead of PTX or AMDIL for the device program. 
+The offline compilation flow of \chipstar is based on the LLVM Project's~\cite{LLVM} Clang~\cite{Clang} frontend. The compiliation process is shown in Fig.\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce SPIR-V binaries instead of PTX or AMDIL for the device program. 
 
 \begin{figure*}
     \centering
-    \includegraphics[width=\linewidth]{figs/compilation.pdf}
-    \caption{\pj{Henry (?) TODO: This is copied from HIPLZ -- redraw and adapt to the current status of \chipstar with the OpenCL in focus and Clang, LLVM tooling + the extra passes we run visible.}}
+    \includegraphics[scale=1]{figs/chipstar-compilation-v2.pdf}
+    \caption{The offline compilation flow. The offline device builtin library provides target independent HIP builtin implementations. The opt tool runs LLVM passes provided by \textit{chipStar} for lowering HIP features to OpenCL-SPIR-V environment. The SPIR-V translation is performed using Khronos' LLVM-SPIRV-Translator tool}
     \label{fig:compilation}
 \end{figure*}
 
@@ -291,6 +297,15 @@ Most of the compilation related changes have been upstreamed to the LLVM project
 \pj{Identify the chipstar-specific LLVM passes yet to upstream.}
 
 \pj{Henry (?) TODO: Discuss the eager compilation slowness problem and how it was solved in chipstar and PoCL-level0.}
+
+Fig.\ref{fig:online-compilation} shows online compilation flow from SPIR-V to device code in \textit{chipStar} runtime. A SPIR-V module is compiled just-in-time when a kernel associated with it is launched. The online device builtin library provides HIP builtin functions based on device capabilities which are linked to the user’s device programs. For example, for HIP floating-point atomics the runtime chooses between implementation that maps them to corresponding native function or emulates them via atomic exchange operations.
+
+\begin{figure*}
+    \centering
+    \includegraphics[scale=1.0]{figs/chipstar-rt-compile-n-link.pdf}
+    \caption{The just-in-time compilation flow in \chipstar}
+    \label{fig:online-compilation}
+\end{figure*}
 
 \subsection{Handling Warp-Level Primitives}
 
@@ -308,7 +323,7 @@ The base OpenCL specification, on the other hand, doesn't have a warp concept, b
 \subsection{Device Built-in Library}
 
 The \textit{chipstar} device-side library implements the HIP math API, by using a combination of OpenCL C math builtins, OCML (part of ROCm-Device-Libs), and custom implementations.
-A lot of the functions in the math API have an equivalent OpenCL builtin with adequate accuracy guarantees with a few exceptions that cannot be mapped directly, and thus require software based emulation such as floating-point atomics. The main challenge in terms of a fast yet portable implementation of the functions are due to differences in math accuracy requirements between CUDA/HIP and OpenCL: most of the standard math functions of CUDA are defined in higher accuracy than what the OpenCL standard requires. 
+A lot of the functions in the math API have an equivalent OpenCL builtin with adequate accuracy guarantees with a few exceptions that cannot be mapped directly, and thus require software based emulation such as floating-point atomics on some devices. The main challenge in terms of a fast yet portable implementation of the functions are due to differences in math accuracy requirements between CUDA/HIP and OpenCL: most of the standard math functions of CUDA are defined in higher accuracy than what the OpenCL standard requires. 
 
 Furthermore, CUDA/HIP defines a set of \textit{intrinsics}, which are faster yet less accurate versions of the standard functions. This exposes a further difficulty when aiming for a portable yet fast implementation: It heavily depends on the targeted platform what level of accuracy is achievable while still enabling execution time benefits. Since CUDA is inherently meant not to be cross-vendor portable, the intrinsics are defined only to match the CUDA microarchitecture in an optimal manner, which might not be the case for other devices. 
 
@@ -400,7 +415,8 @@ lines of code that were needed to allow programmers to put their accrued talents
 use of that material as a matter of law.''~\cite{JavaSupreme}
 \end{quote}
 
-Our limited implementation of the CUDA API seems to fall well within such fair use although no code was copied directly from the NVIDIA implementation. However, since we, the \chipstar developers are engineers, not lawyers, we wanted to be extra careful that copyrights were not disrespected in any jurisdiction when adding support for direct CUDA API calls by using an implementation approach where only the programmer's manual was consulted for the API reference when implementing the CUDA compatibility headers to the \chipstar code base. 
+Although no code was copied directly from the NVIDIA implementation, even if it was the case we believe
+our limited implementation of the CUDA API falls well within such fair use outlined in the ruling. However, since we, the \chipstar developers are engineers, not lawyers, we wanted to be extra careful that copyrights were not disrespected in any jurisdiction when adding support for direct CUDA API calls by using an implementation approach where only the programmer's manual was consulted for the API reference when implementing the CUDA compatibility headers to the \chipstar code base. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -503,9 +519,10 @@ Thanks to using the open standard OpenCL as the portability layer, various debug
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Platform Portability Experiments}
+\section{Platform Portability Validation}
 \label{section:platformPortability}
 
+\pj{Summarize to a table with number of passing tests.}
 \subsection{AMD and Intel CPUs}
 
 \pj{Using Intel OpenCL CPU and/or PoCL-CPU}
@@ -513,6 +530,7 @@ Thanks to using the open standard OpenCL as the portability layer, various debug
 \subsection{ARM Mali GPU}
 
 \pj{Since ARM Mali supports SPIR-V, we could run a portability experiment with CUDA/HIP running on a smartphone....}
+\pj{Does it support SVM or generic?}
 
 \subsection{RISC-V}
 
@@ -524,14 +542,14 @@ Thanks to using the open standard OpenCL as the portability layer, various debug
 
 \subsection{PoCL-Remote}
 
-\pj{This could be an interesting curiosity as soon as we (finally!) get PoCL-R open sourced.}
+\pj{This should be an interesting curiosity as soon as we (finally!) get PoCL-R open sourced.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Compatibility Validation}
 \label{section:applications}
 
-In order to assess the  compatibility level of \textit{chipstar}, we ported a set of well-known applications and libraries used widely in HPC domain that are commonly used with CUDA or HIP applications. The applications and which features or libraries of \chipstar they use are shown in Table~\ref{tab:applications}.
+In order to assess the application compatibility level of \textit{chipstar}, we ported a set of well-known applications and libraries that are commonly used with CUDA or HIP applications in HPC domain. The applications and which features or libraries of \chipstar they use are shown in Table~\ref{tab:applications}.
 
 \newcommand{\x}[0]{\checkmark}
 
@@ -595,8 +613,10 @@ Here we focus on the Hartee-Fock (HF) algorithm used by a CUDA library in GAMESS
 The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs and total over 20,000 lines of HIP/CUDA kernel code.\pj{From this paper's perspective this sentence is very essential: The amount of code lines we successfully compile and run.} As noted in Table \ref{tab:applications}, the code uses shared memory, with \_\_syncthreads() calls to ensure copying values from global memory to shared memory completed for the threadblock before using it.
 hipBLAS and hipSOLVER calls are used to form intermediates. The main hipBLAS calls are hipblasDscal, hipblasDgemm, hipblasDcopy, hipblasDaxpy, hipblasDdot, hipblasDgemv, hipblasDgeam, and the main hipSOLVER call is hipsolverDsyevd.\pj{From these it would be good to summarize for example, that they cover the key blas functionality.} These are used at each iteration of the HF algorithm to (among other things) diagonalize the Fock matrix and construct the density matrix, which are key blas functionalities in the HF algorithm.
 
-In terms of functionality, the HF code compiles and run correctly with CHIP-SPV for basis sets which only use $s$ and $p$ functions. For larger basis sets containing $d$ functions there is currently a runtime error.
+In terms of functionality, the HF code compiles and run correctly with CHIP-SPV.
 \cb{Do you think it is worth it to discuss the \_\_syncthreads issue here? My thought is that another large benefit of having this second, independent implementation of HIP allowed us to see that the HIP documentation is a little ambiguous or deficient in how it describes some things (like syncthreads)}\pj{You mean the "or exited" clause? Yes it could be useful as it's a finding while porting an app and we can refer to the extensions (Table~\ref{table:extensions})}
+
+\cb{I need to add Performance: A100, PVC, Gen9, MI100. I should also add the peak BW and peak flops in a table}
 
 \subsection{libCEED}
 
@@ -613,13 +633,22 @@ In terms of functionality, the HF code compiles and run correctly with CHIP-SPV 
 \section{Performance Evaluation}
 \label{section:performance}
 
-In this section we evaluate the performance of \textit{chipstar}  with specific focus on overheads caused by layering HIP/CUDA on top of other API layers such as OpenCL and Level Zero.
+In this section we evaluate the performance of \chipstar  with specific focus on overheads caused by layering HIP/CUDA on top of other API layers such as OpenCL and Level Zero.
 
-\subsection{Execution Performance}
+\subsection{Execution Time vs. SYCL}
 
-\pj{TODO: Which apps and which GPUs we should use here?}
+...
+\pj{The specs of the GPU, its driver/oneAPI version.}
+\pj{How HeCbench benchmarks were selected.}
+\begin{figure*}
+    \centering
+    \includesvg[width=\linewidth]{figs/hecbench-intel-arc-a750}
+    \caption{The execution speed of a set of benchmarks vs. SYCL on Intel ARC A750.}
+    \label{fig:online-compilation}
+\end{figure*}
 
-\subsubsection{GeekBench}
+\pj{Result analysis. Reasons for differences.}
+
 
 % GeekBench 5.2.3  - 
 \pj{TODO: Compare to https://github.com/vosen/ZLUDA, if possible}
@@ -692,7 +721,7 @@ Fig.~\ref{fig:lz-comparison} shows the comparison results. \pj{todo: to analyze 
 \pj{The key pitfalls of the article currently:
 \begin{itemize}
     \item The article claims cross-vendor portability but the tested devices are very Intel-centric. We should try to add at least ARM CPUs, preferably ARM GPUs. RISC-V would be excellent. Rusticl could be useful for running on AMD and NVIDIA if it works adequately well for some benchmarks (we can discuss the lack of coarse-grain SVM or subgroups, for example, if it doesn't). Running on PoCL-CUDA would also make this aspect more solid. 
-    \item It reads mostly as a technical report. For a scientific article we should add more complex technical descriptions, e.g., about the Graph implementation using command buffers.
+    \item It reads mostly as a technical report. For a scientific article we should add a bit more complex technical content, e.g., about the Graph implementation using command buffers.
 \end{itemize}}
 
 
