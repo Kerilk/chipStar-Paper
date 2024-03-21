@@ -1,0 +1,38 @@
+\newcommand{\x}[0]{\checkmark}
+
+\pj{TODO: also highlight which compatibility library was tested}
+\begin{table*}[]
+    \centering
+    \settowidth\rotheadsize{Warp-level primitives}
+    \begin{tabular}{|c|c|c|c|c||c|c|c|c|c|c|c|}
+    \hline
+                                           &
+                   \rothead{Shared memory} &
+                   \rothead{\_\_syncthreads()} &
+                   \rothead{Unified Memory} &
+                   \rothead{Warp-level primitives} & \rothead{...} & \rothead{cuDNN} & \rothead{CUDA Graphs} & \rothead{hipBLAS} & \rothead{hipSOLVER} & \rothead{libCEED} & \rothead{rocPRIM} \\    
+    \hline
+    \hline    
+       CP2K        & &  & &  &  & &  &  &  &  &  \\
+    \hline
+       GAMESS      & \x & \x &  & &  &  &  & \x & \x &  & \\ 
+    \hline
+       Pytorch-HIP & &  & &  &  & &  &  &  &  & \\       
+    \hline
+    \hline
+       cuDNN       & &  & &  &  & &  &  &  &  & \\        
+    \hline
+       CUDA Graphs & &  & &  &  & &  &  &  &  & \\    
+    \hline
+       hipBLAS     & &  & &  &  & &  &  &  &  & \\
+    \hline    
+       hipSOLVER   & &  &  \x & & &  &  &  &  &  &  \\       
+    \hline
+       libCEED     & &  &  &  & & &  &  &  &  & \\
+    \hline
+       rocPRIM     & &  & \x & & & &  &  &  &  & \\
+    \hline        
+    \end{tabular}
+    \caption{The applications and libraries ported on \chipstar and how each of them exercises different technically non-trivial CUDA/HIP features and \chipstar-ported libraries. \pj{Let's fill the matrix up after the table structure has stabilized.}}
+    \label{tab:applications}
+\end{table*}

@@ -1,0 +1,46 @@
+\section{Libraries}
+\label{section:libraries}
+
+The CUDA and ROCm software platform include a large set of useful libraries in addition to the general purpose program input support. These libraries include common routines such as BLAS (Basic Linear Algebra Subprograms) and Deep Neural Network (DNN) acceleration libraries. Implementing all of the libraries are out of scope of this work which focuses on providing portable and robust CUDA/HIP language support. However, we've already identified a set of key libraries and created example ports of them, enhancing portability of CUDA/HIP programs to Intel devices. The plan is to expand the set of supported libraries as required and demanded by the ported applications of interest. We discuss the currently supported libraries in the following and highlight their essential technical aspects.
+
+\subsection{cuBLAS/hipBLAS for Intel GPUs}
+
+BLAS is one of the core libraries in HPC. To implement the CUDA/HIP interfaces to BLAS for Intel hardware, we implemented an oneMKL backend to the hipBLAS performance library to run on Intel GPUs. Applications calling hipBLAS functions can thus run on Intel hardware without any code changes.
+The oneMKL backend for hipBLAS uses the \chipstar interoperability feature with SYCL to invoke oneMKL’s SYCL functions. During the hipBLAS handle creation, the oneMKL backend extracts the native queue handle of a HIP stream using interop APIs from CHIP-SPV.  It uses the native queue handle to create a corresponding SYCL queue to execute the  oneMKL functions for the calls initiated from the hipBLAS handle. Since SYCL and \chipstar both support Level Zero and OpenCL runtimes, the oneMKL backend for hipBLAS also supports both: Users can switch between them using environment variables and the rest will work transparently in the hipBLAS library.
+
+To assess the overheads of the implementation, we measured single precision GEMM function performance with 2048 x 2048 matrix size comparing hipBLAS, oneMKL SYCL and oneMKL OpenMP runtime and APIs on a pre-production Intel PVC system and measured execution time, comparing to running oneMKL directly from SYCL. The difference was negligible.
+
+%%% PEKKA'S EDITING GOING HERE %%%
+
+%Fig.~\ref{fig:hipBlas-rel-perf} shows the relative performance with oneMKL SYCL as the base.  We found that the performances are closely matched across all three runtimes.\pj{Not sure if it's worth adding the different iteration counts. If you look at the other results later, we took the best execution times over 100 iterations to give the roofline for perf. achievable. The perf. should vary only with a cold cache or if there's some other load in the system competing for the resources, both cases of which we should filter out this way.}
+
+%Currently, oneMKL does not provide a pointer-mode API as defined in HIP and CUDA. To this end, we added a wrapper in oneMKL backend for hipBLAS to emulate pointer mode under oneMKL. In HIP device pointer mode, the oneMKL backend needs to copy scalar parameters, such as ‘alpha’ and ‘beta’ in GEMM between host and device memories.  Fig.~\ref{fig:hipBlas-host-vs-dev} shows more than 50\% performance drop with the workaround hence it is advised to avoid using device pointer mode in the current release.
+
+%\begin{figure}
+%     \centering
+%     \begin{subfigure}[b]{0.5\textwidth}
+%         \centering             
+%         \includegraphics[width=1\textwidth]{figs/comparision_between_sycl_hip_openmp.pdf}
+%         \caption{Average time taken for 5k gemm run with different runtime. Data is normalized with Sycl as 1.}
+%         \label{fig:hipBlas-rel-perf}
+%     \end{subfigure}     
+%     \begin{subfigure}[b]{0.5\textwidth}
+%         \centering             
+%         \includegraphics[width=1\textwidth]{figs/comparision between_host_and_dev_ptr.pdf}
+%         \caption{Average time taken for 5k gemm run with host and device pointers. Data is normalized with host pointer as 1.}
+%         \label{fig:hipBlas-host-vs-dev}
+%     \end{subfigure}
+%     \caption{...\pj{todo}}
+%\end{figure}
+
+\subsection{cuDNN / MIOpen}
+
+\pj{TODO: SYCL-DNN. Involve Codeplay with this paper?}
+
+\subsection{rocPRIM for CUB compatibility}
+
+\pj{TODO: test with cub}
+
+\subsection{CUDA Graphs / MIGraphX}
+
+\pj{TODO Michal: Describe mapping the Graph API to the command buffer API}
