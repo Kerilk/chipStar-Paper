@@ -154,6 +154,7 @@ Finally, conclusions and future work plans are laid out in Section~\ref{section:
 \section{Heterogeneous Platform Hardware Abstraction Layers}
 \label{section:portabilityAPIs}
 
+\pj{TODO: This section can and should be shrunk significantly.}
 In practice, both CUDA and HIP are single-vendor supported programming models.
 This is reflected, for example, in their platform property APIs which define limited
 queries for device properties, highlighting features in each vendor's
@@ -188,7 +189,7 @@ queries that can be used to tune the execution at runtime.
 %events and, more recently, the relaunch of the task graphs can
 %be optimized with command buffering,
 
-\pj{It would be good if this paragraph was reviewed by an OpenMP expert:}
+\pj{This paragraph should be reviewed by an OpenMP expert:}
 Recently, OpenMP~\cite{OpenMP} has been considered for portability layer usage and,
 in fact, specifically for implementing CUDA in~\cite{10.1145/3559009.3569687}.
 While OpenMP enjoys support from a wide range of vendors,
@@ -201,8 +202,7 @@ unneccessary for a portability layer API.
 
 Heterogeneous System Architecture (HSA) is an open heteroegeneous platform
 specification that also defines a runtime API~\cite{HSA,HSART}.
-A key differentiating
-feature of HSA is that it standardizes on shared virtual memory,
+A key differentiating feature of HSA is that it standardizes on shared virtual memory,
 making system-wide virtual memory addressing a required feature from
 implementations. In hindsight this requirement was likely too ambitious
 too early, as system-wide virtual memory support is only recently becoming
@@ -344,8 +344,8 @@ execution~\cite{OpenCL}.
 
 \pj{Paulius/Henry: can you check if this is true currently? Do we utilize OoOQs?}
 To facilitate out-of-order execution from CUDA/HIP programs the programmer has to rely
-to the explicit event synchronization and recording APIs are required which are mapped
-to OpenCL out-of-order queues by \chipstar, if available in the target.
+in the explicit event synchronization and recording APIs which are implemented
+using OpenCL out-of-order queues by \chipstar, if supported by the target.
 
 The CUDA/HIP event API differs from the OpenCL: In CUDA/HIP the user is responsible for explicitly creating and recording events, while in OpenCL the implementation implicitly creates events when enqueuing commands. Recording events in \chipstar is implemented by creating a new marker-type \type{cl\_event} (\func{clEnqueueMarkerWithWaitList()}) when \func{cudaEventRecord()} is called.
 
@@ -388,10 +388,10 @@ The CUDA/HIP event API differs from the OpenCL: In CUDA/HIP the user is responsi
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Compiler Aspects}
+\section{Compilation Aspects}
 \label{section:compilation}
 
-This section discusses the compilation techniques used by \chipstar. We first introduce the overall compilation flow and then focus on key challenges that needed to be tackled. Finally we summarize our findings on the key needs to extend the OpenCL/SPIR-V standards to bridge key feature gaps between the specifications.
+This section discusses the compilation flow used by \chipstar. We introduce the overall compilation flow, the kernel built-in library implementation and summarize our findings on the key needs to extend the OpenCL/SPIR-V standards to bridge key feature gaps between the specifications.
 
 \subsection{The Compilation Flow}
 
@@ -553,8 +553,9 @@ The OpenCL specification, on the other hand, doesn't have a warp concept, but th
 \section{Application Porting Examples}
 \label{section:applications}
 
-In order to test \chipstar in practice with more complex real world applications, in addition to the benchmarks presented in the next section, we ported a set of relatively complex HIP/CUDA-based HPC applications and libraries using \chipstar. The test environment for the applications was the Aurora supercomputer utilizing Intel Datacenter Intel® Data Center GPU Max Series as the accelerator part. 
-The porting examples are described in the following subsections.
+In order to test \chipstar in practice with more complex real world applications, in addition to the benchmarks presented in the next section, we ported a set of relatively complex HIP/CUDA-based HPC applications and libraries using \chipstar. The test environment for the applications was the Aurora supercomputer utilizing Intel Datacenter Intel® Data Center GPU Max Series as the accelerator part.
+The porting examples are described in the following subsections with the performance evaluations
+presented in the next section.
 %The applications and which features or libraries of \chipstar they use are shown in Table~\ref{tab:applications}.
 
 %\input{feature-testing-table.tex}
@@ -571,9 +572,9 @@ The porting examples are described in the following subsections.
 \subsection{GAMESS}
 
 General Atomic and Molecular Electronic Structure System (GAMESS~\cite{gamess,gamess2}) is a quantum chemistry software package which implements many electronic structure methods. 
-% The code is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods been implemented in CUDA which scales to 4096 nodes on Summit, an Nvidia V100-based supercomputer \cite{gamess_cuda1, gamess_cuda2, summit}. {TODO mention about how ported to HIP } Here we focus on the HF method. 
-In this porting case we focused on the Hartee-Fock (HF) algorithm used by a CUDA library in GAMESS described in \cite{gamess_cuda1}, which has been ported to HIP. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.  The HF method determines the molecular energy of a system by solving a set of non-linear eigenvalue equations iteratively.  It primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed. 
-% Colleen> I'm ok to remove the discussion of the basis functions if the code works for all of them :) The two electron integrals are grouped into different classes, depending on the angular momentum of the basis functions used. The basis functions here are $s-$ ,$p-$, and $d-$, where $s$ is least complex and $d$ is the most complex. 
+The code base is primarily in Fortran 77/90 with some C/C++ and a CUDA library converted to HIP by a 3rd party. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods were implemented in CUDA which scales to 4096 nodes on Summit, an Nvidia V100-based supercomputer \cite{gamess_cuda1, gamess_cuda2, summit}.
+In this porting case we focused on the Hartee-Fock (HF) algorithm used by a CUDA library in GAMESS described in \cite{gamess_cuda1}, which has been ported to HIP. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.  The HF method determines the molecular energy of a system by solving a set of non-linear eigenvalue equations iteratively.  It primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed.
+% Colleen> I'm ok to remove the discussion of the basis functions if the code works for all of them :) The two electron integrals are grouped into different classes, depending on the angular momentum of the basis functions used. The basis functions here are $s-$ ,$p-$, and $d-$, where $s$ is least complex and $d$ is the most complex.
 
 
 The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs and total over 20,000 lines of HIP/CUDA kernel code.
@@ -591,7 +592,6 @@ For this porting case, we added a SYCL interoperatibility feature to \chipstar w
 \pj{Colleen: Please check this paragraph that I got things right:}
 In terms of functionality, the HF code compiles and was verified to run correctly with \chipstar on the test system. The porting effort was relatively low, with one exception due to a small but significant specification difference in CUDA vs. OpenCL related to kernel thread synchronization: In CUDA group barriers are not counting in exited threads, meaning that there can be early returns from the kernel by a subset of the threads after which it is still legal to perform barrier synchronization with the remaining subset -- the exited threads are just not counted in. In OpenCL this case is undefined behavior and in many implementations can lead to a deadlock. To tackle this gap, an OpenCL extension adding a group barrier with similar semantics would be needed (see \textit{cl\_ext\_alive\_only\_barrier} in Table~\ref{table:extensions}).
 
-\cb{TODO: I need to add Performance: A100, PVC, Gen9, MI100. I should also add the peak BW and peak flops in a table}
 
 \subsection{libCEED}
 
@@ -606,64 +606,73 @@ In terms of functionality, the HF code compiles and was verified to run correctl
 \section{Performance Evaluation}
 \label{section:performance}
 
-%%%% Pekka bookmark %%%%
+We evaluated the \chipstar performance by assessing the runtime of the GAMESS
+software package, comparing the performance on various HIP-capable GPU platforms,
+and with a set of benchmarks selected from the HeCbench collection~\cite{HeCbench},
+comparing against their SYCL versions running on the same GPU and the OpenCL driver. All of
+the performance numbers used the \chipstar v1.2 open source release~\pj{to release}.
 
+\subsection{GAMESS Performance}
 
-In this section we evaluate the execution performance of \chipstar  with specific focus on overheads caused by layering HIP/CUDA on top of other API layers such as OpenCL and Level Zero.
+The GAMESS port was executed with the Intel Datacenter Intel® Data Center GPU Max Series
+component of the Aurora installation. Its performance was compared against ... with
+the results displayed in Table~\ref{TODO}.
 
-\subsection{Execution Time vs. SYCL}
+\cb{TODO: I need to add Performance: A100, PVC, Gen9, MI100. I should also add the peak BW and peak flops in a table}
 
-...
-\pj{The specs of the GPU, its driver/oneAPI version.}
-\pj{How HeCbench benchmarks were selected.}
+\pj{To analyze and discuss the results.}
+
+\subsection{HeCbench HIP vs. SYCL Performance}
+
+For this evaluation we chose a subset of benchmarks included in the HeCbench
+suite and compared the performance of HIP versions of the benchmarks
+compiled with \chipstar against SYCL versions. The benchmark application
+selection criteria was as follows:
+1) The applications had a SYCL version and a HIP version that could be built with \chipstar v1.2 and its ported libraries.
+2) There were no significant identified performance-affecting structural or implementation differences between the SYCL and HIP versions. Some of such identified unfair differences were fixed and submitted back to the HeCbench repository.
+3) The benchmark application verified itself and had to validate correctly on both software platforms.
+4) ... \pj{Henry: please add the rest of the criteria we used for picking the applications.}
+
+The SYCL versions were compiled with Intel's DPC++ shipped with the
+oneAPI v2024.X.X release\pj{TODO}. Thanks to the high quality OpenCL backend of DPC++,
+both the HIP and the SYCL versions of the applications could be executed
+using the same OpenCL driver on the same Intel ARC A750 GPU, nicely isolating
+the differences between the tested software stacks to the language frontend and the
+LLVM IR level device code compiler optimizations. The results of this comparison are
+shown in Fig.~\ref{fig:online-compilation}.
+
 \begin{figure*}
     \centering
     \includesvg[width=\linewidth]{figs/hecbench-intel-arc-a750}
-    \caption{The execution speed of a set of benchmarks vs. SYCL on Intel ARC A750.}
+    \caption{HIP vs. SYCL speed on Intel ARC A750.}
     \label{fig:online-compilation}
 \end{figure*}
 
-\pj{Result analysis. Reasons for differences.}
+Interestingly, although both the DPC++ and \chipstar use very similar tools and components in
+their runtime (OpenCL) and compilation flow (Clang/LLVM and SPIR-V as the device intermediate
+format), we measured significant variance in the execution performance to both directions.
+We analyzed the cases with the most dramatic differences and identified various explanations:
+Many of the benchmarks executed very short kernel commands, making the benchmark actually
+mostly measure the host API call execution speed. For example, the ``overlay'' benchmark
+could be sped up signficantly by switching off the profiling command queue feature that
+was accidentally left on by default. In some cases the device built-ins were more optimized
+in \chipstar than in DPC++, in some cases it was the opposite. For example, when
+we compared the \chipstar and DPC++ LLVM IRs of the device code for the ``nlll'' benchmark,
+we found that only \chipstar performed ``if-conversion'', converting some of the very small
+branches to conditional moves, which provided significant benefits. The
+rest of the differing cases are likely having unidentified implementation differences
+between the SYCL and the HIP variations, e.g., related to specification-mandated
+synchronization of the memory transfers.
 
+% Pekka> We need to discuss if this makes sense or should we compare
+% chipStar-LZ vs. chipStar-OpenCL here? It might just measure the perf.
+% between Intel's LZ and CL driver more than chipStar, which might not
+% be interesting in the context of this paper.
+%\input{layering-evaluation.tex}
 
-% GeekBench 5.2.3  - 
-\pj{TODO: Compare to https://github.com/vosen/ZLUDA, if possible}
-
-\subsection{Layering Overheads}
-
-The design of \chipstar enables different runtimes to be utilized as backends. In addition to the OpenCL backend, there is also a direct Level Zero backend which can be utilized to control Intel GPU devices. While a layered software stack, as depicted in Fig.~\ref{fig:layered-sw-stack} provides clean division of responsibilities and enables portability via a cross-vendor supported API layer, interfacing directly to vendor-specific lower level APIs such as LZ might have performance benefits.
-
-To evaluate the costs of layering on top of OpenCL, we utilized the PoCL's experimental Level Zero driver to measure layered OpenCL calls to the Level Zero library. We utilized a set of benchmark applications \pj{todo describe} on two different Level Zero-supporting devices \pj{todo describe} and using the direct Level Zero execution as a baseline. As another comparison platform we utilized Intel's OpenCL driver.
-
-Fig.~\ref{fig:lz-comparison} shows the comparison results. \pj{todo: to analyze after have the final numbers closer to the submission. There are inoptimalities we will fix before both in the LZ backend and in PoCL-LZ.}
-
-\begin{figure}
-     \centering
-     \begin{subfigure}[b]{0.5\textwidth}
-         \centering             
-         \includegraphics[width=0.9\textwidth]{figs/LZ-BE-comparison-Intel-iGPU.pdf}
-         \caption{iGPU}
-         \label{fig:lz-comparison-igpu}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.5\textwidth}
-         \centering
-        \includegraphics[width=1.0\textwidth]{figs/LZ-BE-comparison-Intel-dGPU.pdf}
-         \caption{dGPU}
-         \label{fig:lz-comparison-igpu}
-     \end{subfigure}
-     \caption{\chipstar direct Level Zero backend execution time (normalized to 100) in comparison to the \chipstar OpenCL backend on top of Intel OpenCL and the layered PoCL-Level0 driver with two different GPUs.}
-     \label{fig:lz-comparison}
-\end{figure}
-
-\pj{TODO: Straight to CUDA vs. CUDA to HIP to chipstar to OpenCL + to OpenCL to PoCL-CUDA to CUDA}
-
-\subsection{Graphs on Command Buffers}
-
-\pj{Michal (?) TODO: numbers on command buffer benefits here?}
-
-\pj{TODO: Comparisons}
-\pj{TODO: Overhead analysis}
+%\subsection{Graphs on Command Buffers}
+%
+%\pj{Michal (?) TODO: numbers on command buffer benefits here?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

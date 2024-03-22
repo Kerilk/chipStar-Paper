@@ -1,0 +1,28 @@
+\subsection{OpenCL Layering Overhead}
+
+The design of \chipstar enables different runtime APIs to be utilized as backends. In addition to the OpenCL backend, there is also a direct Level Zero backend~\cite{HIPLZ} which can be utilized to control Level Zero-supported devices. While using OpenCL enables fat binary portability via a cross-vendor supported API layer, interfacing directly with a vendor-specific lower level APIs such as LZ might have performance benefits thanks to better feature-matching and co-optimization with the underlying hardware.
+
+In order to evaluate the costs of layering on top of OpenCL in \chipstar, we implemented an experimental layered OpenCL driver using Level Zero using the PoCL OpenCL implementation framework. The driver was not implemented up to compliance, but added enough features to cover the test cases. We ran a set of benchmark applications on two different Level Zero-supporting devices \pj{todo describe} and using the direct Level Zero execution as a baseline. As another comparison platform we utilized Intel's OpenCL driver.\pj{This comparison would be cleaner if we used the same subset, or a subset of that in this comparison.}\pj{Perhaps simplify this so we run only on ARC too?}\pj{We need to rerun with chipStar v1.2}.
+
+Fig.~\ref{fig:lz-comparison} shows the comparison results. \pj{todo: to analyze after have the final numbers closer to the submission. There are inoptimalities we will fix before both in the LZ backend and in PoCL-LZ.}
+
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.5\textwidth}
+         \centering
+         \includegraphics[width=0.9\textwidth]{figs/LZ-BE-comparison-Intel-iGPU.pdf}
+         \caption{iGPU}
+         \label{fig:lz-comparison-igpu}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.5\textwidth}
+         \centering
+        \includegraphics[width=1.0\textwidth]{figs/LZ-BE-comparison-Intel-dGPU.pdf}
+         \caption{dGPU}
+         \label{fig:lz-comparison-igpu}
+     \end{subfigure}
+     \caption{\chipstar direct Level Zero backend execution time (normalized to 100) in comparison to the \chipstar OpenCL backend on top of Intel OpenCL and the layered PoCL-Level0 driver with two different GPUs.}
+     \label{fig:lz-comparison}
+\end{figure}
+
+\pj{TODO: Straight to CUDA vs. CUDA to HIP to chipstar to OpenCL + to OpenCL to PoCL-CUDA to CUDA}

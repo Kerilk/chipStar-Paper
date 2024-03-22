@@ -9,3 +9,5 @@ watch:
 	$(shell while true; do inotifywait -e modify chipstar.tex; $(MAKE) chipstar.pdf; done;)
 
 
+clean:
+	rm -f *.aux chipstar.pdf
