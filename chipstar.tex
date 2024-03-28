@@ -18,9 +18,9 @@
 %\usepackage{subfigure}
 \usepackage{caption}
 \usepackage{subcaption}
-%\usepackage{draftwatermark}
-%\SetWatermarkText{DRAFT}
-%\SetWatermarkScale{1}
+\usepackage{draftwatermark}
+\SetWatermarkText{DRAFT}
+\SetWatermarkScale{1}
 
 % https://tex.stackexchange.com/questions/326897/vertical-alignment-of-a-turned-cell
 \usepackage{rotating}
@@ -44,6 +44,7 @@
 \newcommand{\cb}[1]{ \mynote{CB}{#1}{magenta} }
 \newcommand{\pv}[1]{ \mynote{PV}{#1}{yellow} }
 \newcommand{\ba}[1]{ \mynote{BA}{#1}{brown} }
+\newcommand{\kh}[1]{ \mynote{KH}{#1}{red} }
 
 \newcommand{\hiplz}{\texttt{HIPLZ}\xspace}
 \newcommand{\hipcl}{\texttt{HIPCL}\xspace}
@@ -73,15 +74,16 @@
 %\author{pekka.jaaskelainen }
 %\date{March 2023}
 
-\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Brice Videau
+\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Karol Herbst, Brice Videau
         % <-this % stops a space
 \thanks{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarbojit Sarkar and Ben Ashbaugh(?) are with Intel Corporation. \textit{Corresponding author: Pekka Jääskeläinen, email: pekka.jaaskelainen@intel.com}.}
 \thanks{Pekka Jääskeläinen is also with Tampere University, Finland. }
 \thanks{Paulius Velesko is with Pagan LC.}
-\thanks{Brice Videau, Colleen Bertoni and Kevin Harms are with Argonne National Laboratory, ...}
 \thanks{Philip C. Roth is with Oak Ridge National Laboratory, ... }
 \thanks{Rahulkumar Gaytri is with National Energy Research Scientific Computing Center, ...}
 \thanks{Jisheng Zhao is with Georgia Institute of Technology, Atlanta, Georgia.}
+\thanks{Karol Herbst is with Red Hat, Inc.}
+\thanks{Brice Videau, Colleen Bertoni and Kevin Harms are with Argonne National Laboratory, ...}
 \thanks{\pj{The authors are not in any particular order. I put myself as the 1st author as I'm leading the writing, and then I ordered the co-authors according to their affil.}}
 %\thanks{This paper was produced by the IEEE Publication Technology Group. They are in Piscataway, NJ.}% <-this % stops a space
 %\thanks{Manuscript received April 19, 2021; revised August 16, 2021.}}
@@ -490,7 +492,7 @@ cl\_ext\_alive\_only\_barrier       & A special work-group barrier for barrier c
     \hline
 cl\_ext\_cuda\_math     & Implement math functions and intrinsics with precision requirements that match CUDA's. To enable more optimized intrinsics. & To be proposed.  \\
     \hline
-cl\_ext\_device\_side\_abort        & Implement \func{\_\_trap()} on the low-level runtime side. The current implementation requires compilter transformations. & Public.  \\
+cl\_ext\_device\_side\_abort        & Implement \func{\_\_trap()} on the low-level runtime side. The current implementation requires compiler transformations. & Public.  \\
     \hline
 cl\_ext\_extended\_device\_properties & \func{hipGetDeviceProperties()} can be used to query more device properties than the basic OpenCL device or platform query APIs support, this fills the gap. & To be proposed. \\
     \hline
@@ -498,7 +500,7 @@ cl\_ext\_relaxed\_printf\_address\_space &  CUDA's \func{printf()}behavior with 
     \hline
 cl\_intel\_unified\_shared\_memory & Used for optimized \func{cudaMalloc()} when available.  & Public. To promote to a general 'khr' extension. \\
    \hline
-cl\_khr\_command\_buffer            & For optimized implementation of CUDA graph re-execution. & Public. SVM command extension proposed.  \\
+cl\_khr\_command\_buffer            & For optimized implementation of CUDA graph re-execution. & Public. SVM commands added in v0.9.4.  \\
     \hline
 cl\_ext\_command\_buffer\_host\_data & For optimized implementation of CUDA graphs which transfer data between the host and the device. & To be proposed. \\
     \hline
