@@ -47,13 +47,15 @@ The test run computed the HF energy of a cluster of 150 water molecules with a S
 \begin{tabular}{l|l|l|l|l}
                    & Nvidia A100 & AMD MI250 & Intel PVC      & Intel PVC \\
                    &               &             & (OpenCL backend) & (Level Zero backend) \\ \hline
-Total SCF time (s) &    1.998      &    26.09    & 21.9  & 5.31  
+Total SCF time (s) &    1.998      &    26.09    & 4.9  & 3.6  
 \end{tabular}
     \caption{Comparison of GPU integral code performance across Intel, AMD, and Nvidia}
     \label{table:gamess_perf}
 \end{table*}
 
-Table~\ref{table:gamess_perf} shows that the execution time on the Nvidia A100 is shortest and on AMD MI250 the longest. The energy calculation \pj{of the GAMESS simulation?} can be split into two main parts: Fock build time (time for computation of electron repulsion integrals and Fock matrix), and DIIS time (time for solving a set of linear equations). The Fock build time is primarily hand-written HIP kernels. The DIIS time is primarily BLAS and LAPACK calls, including calls to the hipSOLVER function hipsolverDsyevd. Table~\ref{table:gamess_breakdown} shows the timing breakdown for each architecture. Compared to the A100 times, the execution times on Intel PVC with the Level Zero backend are 2-5x slower. Although the Fock build time for the Intel PVC with the OpenCL backend is only 3x slower than the A100 time, the times are 25-53x slower for the DIIS and hipsolverDsyevd times. Similarly, although the Fock build time for the MI250 time is only 1.4x slower than the A100 time, and the DIIS time without hipsolverDsyevd is 0.7x the A100 time, the hipsolverDsyevd time is 109x the A100 time.\pj{TODO: Still need to identify why CL is so much slower. But is the LZ number good or not - how is A100 vs. PVC in terms of peak perf?}
+Table~\ref{table:gamess_perf} shows that the execution time on the Nvidia A100 is shortest and on AMD MI250 the longest. The energy calculation of the GAMESS simulation can be split into two main parts: Fock build time (time for computation of electron repulsion integrals and Fock matrix), and DIIS time (time for solving a set of linear equations). The Fock build time is primarily hand-written HIP kernels. The DIIS time is primarily BLAS and LAPACK calls, including calls to the hipSOLVER function hipsolverDsyevd. Table~\ref{table:gamess_breakdown} shows the timing breakdown for each architecture. Compared to the A100 times, the execution times on Intel PVC with the Level Zero backend are 2-5x slower. Although the Fock build time for the Intel PVC with the OpenCL backend is only 3x slower than the A100 time, the times are 25-53x slower for the DIIS and hipsolverDsyevd times. Similarly, although the Fock build time for the MI250 time is only 1.4x slower than the A100 time, and the DIIS time without hipsolverDsyevd is 0.7x the A100 time, the hipsolverDsyevd time is 109x the A100 time.\pj{TODO: Still need to identify why CL is so much slower. But is the LZ number good or not - how is A100 vs. PVC in terms of peak perf?}
+
+% Colleen needs to update this section
 
 \begin{table*}[ht]
 \centering

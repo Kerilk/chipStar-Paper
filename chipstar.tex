@@ -75,7 +75,7 @@
 %\author{pekka.jaaskelainen }
 %\date{March 2023}
 
-\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Karol Herbst, Brice Videau
+\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Jenny Chen, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Karol Herbst, Brice Videau
         % <-this % stops a space
 \thanks{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarbojit Sarkar and Ben Ashbaugh(?) are with Intel Corporation. \textit{Corresponding author: Pekka Jääskeläinen, email: pekka.jaaskelainen@intel.com}.}
 \thanks{Pekka Jääskeläinen is also with Tampere University, Finland. }
@@ -504,6 +504,9 @@ cl\_ext\_relaxed\_printf\_address\_space &  CUDA's \func{printf()}behavior with 
     \hline
 cl\_intel\_unified\_shared\_memory & Used for optimized \func{cudaMalloc()} when available.  & Public. To promote to a general 'khr' extension. \\
    \hline
+cl\_ext\_buffer\_device\_address & Used for optimized \func{cudaMalloc()} when USM nor SVM are available.  & Public. To promote to a general 'khr' extension. \\
+   \hline
+   
 cl\_khr\_command\_buffer            & For optimized implementation of CUDA graph re-execution. & Public. SVM commands added in v0.9.4.  \\
     \hline
 cl\_ext\_command\_buffer\_host\_data & For optimized implementation of CUDA graphs which transfer data between the host and the device. & To be proposed. \\
