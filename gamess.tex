@@ -36,18 +36,19 @@ In terms of functionality, the HF code compiles and was verified to run correctl
 \subsection{Performance}
 
 %The GAMESS port was executed with the PVC component of the Aurora installation. 
-The performance of GAMESS was measured by compiling and running the same HIP source code on a PVC through \chipstar and on an Nvidia A100 as well as an AMD MI250 using ROCm 6.0.0. 
+The performance of GAMESS was measured by compiling and running the same HIP source code on a PVC through \chipstar (Release 1.2), an Nvidia A100 using CUDA 12.2.2 with ROCm 6.0.0, and AMD MI250 using ROCm 6.0.0. 
 %\pj{Is it running the HIP code via AMD HIP wrapper or the CUDA version?} \cb{via the AMD HIP wrapper -- everything is using the same HIP code (I put all the runscripts and output on the github https://github.com/colleeneb/gamess\_libcchem\_hip for the record. so it was https://github.com/colleeneb/gamess\_libcchem\_hip/blob/hip\_dev\_for\_intel/hip\_nvidiaa100.sh)} 
 % Not sure if this context is needed here: --PJ
 %The AMD MI250 is part of the JLSE cluster at ANL and is a Supermicro AS-4124GQ-TNMI composed of 2 AMD EPYC 7713 64c (Milan) CPUs and 4 AMD Instinct MI250~\cite{JLSE}. The Nvidia A100 is also part of the JLSE cluster and is composed of a AMD 7532 and 1 Nvidia A100 with 40GB and PCIe 4.0. 
 The test run computed the HF energy of a cluster of 150 water molecules with a STO-3G basis set. The results are displayed in Table~\ref{table:gamess_perf}.
 
+
 \begin{table*}[ht]
 \centering
-\begin{tabular}{l|l|l|l|l}
-                   & Nvidia A100 & AMD MI250 & Intel PVC      & Intel PVC \\
-                   &               &             & (OpenCL backend) & (Level Zero backend) \\ \hline
-Total SCF time (s) &    1.998      &    26.09    & 4.9  & 3.6  
+\begin{tabular}{llllll}
+Total SCF time (s) & Nvidia A100 & AMD MI250 & Intel PVC (Level Zero) & Intel PVC (OpenCL) &  \\ \cline{1-5}
+Average            & 1.66        & 26.34     & 3.63                   & 3.64               &  \\
+Standard Deviation & 0.01        & 0.04      & 0.02                   & 0.06               &  \\ \cline{1-5}
 \end{tabular}
     \caption{Comparison of GPU integral code performance across Intel, AMD, and Nvidia}
     \label{table:gamess_perf}

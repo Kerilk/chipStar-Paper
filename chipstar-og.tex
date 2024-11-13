@@ -1,8 +1,4 @@
-% TRR_latex_guidelines.tex V1.00, 31 August 2020
-
-\documentclass[times]{TRR}
-
-% Begin IEEE Imports
+\documentclass[lettersize,journal]{IEEEtran}
 \usepackage{amsmath,amsfonts}
 \usepackage{algorithmic}
 \usepackage{algorithm}
@@ -62,107 +58,96 @@
 \newcommand{\func}[1]{$#1$\xspace}
 \newcommand{\type}[1]{$#1$\xspace}
 
-% End of IEE imports
+\hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
 
-\usepackage{moreverb,url}
+% IEEE policy on preprints seems to be reasonable:
+% https://journals.ieeeauthorcenter.ieee.org/become-an-ieee-journal-author/publishing-ethics/guidelines-and-policies/submission-and-peer-review-policies/#electronic-reprints
 
-\usepackage[colorlinks,bookmarksopen,bookmarksnumbered,citecolor=red,urlcolor=red]{hyperref}
+% https://journals.ieeeauthorcenter.ieee.org/submit-your-article-for-peer-review/the-ieee-article-submission-process/
+% TPDS manuscript types and submission length guidelines are described below. All page limits include references and author biographies. For regular papers, pages in excess of these limits after final layout of the accepted manuscript is complete are subject to Mandatory Overlength Page Charges (MOPC). Note: All supplemental material must be submitted as separate files and must not be included within the same PDF file as the main paper submission. There is no page limit on supplemental files. 
 
-\newcommand\BibTeX{{\rmfamily B\kern-.05em \textsc{i\kern-.025em b}\kern-.08em
-T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
-
-\def\volumeyear{2020}
+% Regular paper – 12 double column pages (Submissions may be up to 18 pages in length, subject to MOPC. All regular paper page limits include references and author biographies.)
 
 \begin{document}
 
-\runninghead{TODO}
-
 \title{\chipstar: Making HIP/CUDA Programs Cross-Vendor Portable by Relying on Open Standards}
 
-\author{
-Paulius Velesko\affilnum{1}, 
-Pekka Jääskeläinen\affilnum{3}\affilnum{4}, 
-Henry Linjamäki\affilnum{3}, 
-Michal Babej\affilnum{3}, 
-Peng Tu\affilnum{3}, 
-Sarkar Sarbojit\affilnum{3}, 
-Ben Ashbaugh\affilnum{3}, 
-Colleen Bertoni\affilnum{2}, 
-Jenny Chen\affilnum{9}, 
-Kevin Harms\affilnum{2}, 
-Philip C. Roth\affilnum{5}, 
-Rahulkumar Gaytri\affilnum{6}, 
-Jisheng Zhao\affilnum{7}, 
-Karol Herbst\affilnum{8}, 
-Brice Videau\affilnum{2}}
+%\author{pekka.jaaskelainen }
+%\date{March 2023}
 
-\affiliation{
-\affilnum{1}PGLC Consulting
-\affilnum{2}Argonne National Labs
-\affilnum{3}Intel Corporation
-\affilnum{4}Tampere University, Finland
-\affilnum{5}Oak Ridge National Laboratory
-\affilnum{6}National Energy Research Scientific Computing Center
-\affilnum{7}Georgia Institute of Technology, Atlanta, Georgia
-\affilnum{8}Red Hat, Inc.
-\affilnum{9}Purdue University
-}
+\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Jenny Chen, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Karol Herbst, Brice Videau
+        % <-this % stops a space
+\thanks{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarbojit Sarkar and Ben Ashbaugh(?) are with Intel Corporation. \textit{Corresponding author: Pekka Jääskeläinen, email: pekka.jaaskelainen@intel.com}.}
+\thanks{Pekka Jääskeläinen is also with . }
+\thanks{Paulius Velesko is with PGLC.}
+\thanks{Philip C. Roth is with Oak Ridge National Laboratory, ... }
+\thanks{Rahulkumar Gaytri is with National Energy Research Scientific Computing Center, ...}
+\thanks{Jisheng Zhao is with Georgia Institute of Technology, Atlanta, Georgia.}
+\thanks{Karol Herbst is with Red Hat, Inc.}
+\thanks{Brice Videau, Colleen Bertoni and Kevin Harms are with Argonne National Laboratory, ...}
+\thanks{\pj{The authors are not in any particular order. I put myself as the 1st author as I'm leading the writing, and then I ordered the co-authors according to their affil.}}
+%\thanks{This paper was produced by the IEEE Publication Technology Group. They are in Piscataway, NJ.}% <-this % stops a space
+%\thanks{Manuscript received April 19, 2021; revised August 16, 2021.}}
 
-\corrauth{Paulius Velesko, pvelesko@pglc.io}
+% The paper headers
+\markboth{IEEE Transactions on Parallel and Distributed Systems,~Vol.~X, No.~Y, Month~YEAR}%
+{Shell \MakeLowercase{\textit{et al.}}: A Sample Article Using IEEEtran.cls for IEEE Journals}}
+
+%\IEEEpubid{0000--0000/00\$00.00~\copyright~2021 IEEE}
+% Remember, if you use this you must call \IEEEpubidadjcol in the second
+% column for its text to clear the IEEEpubid mark.
+
+\maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
 
+%This document describes the most common article elements and how to use the IEEEtran class with \LaTeX \ to produce files that are suitable for submission to the IEEE.  IEEEtran can produce conference, journal, and technical note (correspondence) papers with a suitable choice of class options.
+
 %\pj{This first paragraph is optional, we can remove it:}
 %Due to NVIDIA dominating the GPU market and despite its lack of cross-vendor portability, the C/C++-based application programming interface of CUDA and its related key libraries are still used in a significant fraction of software utilizing GPU-based acceleration. AMD's ROCm and its Heterogeneous-compute Interface for Portability (HIP) aims to alleviate the CUDA's lack of portability by providing a route out from the NVIDIA CUDA platform to AMD's devices.
 
-We describe \chipstar, an open source software stack which enables building unmodified CUDA and HIP programs to binaries that rely solely on open cross-vendor standards OpenCL and SPIR-V. The relevant technical aspects of \chipstar and the feature mismatches between CUDA/HIP APIs and OpenCL are discussed along with a set of standard extension proposals to bridge the essential gaps in the future.
-The key benefit of the software stack is its portability, which is demonstrated by providing performance evaluations on a diversity of less common CPU/GPU platforms including RISC-V/PowerVR and ARM Mali. A comparison against the original AMD HIP platform provides a geometric mean of X.XX \pj{TODO (Henry)} \pv{Do you need me to run these numbers?}, a reasonable price to pay for the enhanced portability.    
-Although being a relatively young open source code base, \chipstar is now considered mature enough for wider testing and even production use, which is supported by successful porting of GAMESS, \pv{Why not mention libCEED?}a complex HPC application which was deployed on the Aurora supercomputer.
+  We describe \chipstar, an open source software stack which enables building unmodified CUDA and HIP programs to binaries that rely solely on open cross-vendor standards OpenCL and SPIR-V. The relevant technical aspects of \chipstar and the feature mismatches between CUDA/HIP APIs and OpenCL are discussed along with a set of standard extension proposals to bridge the essential gaps in the future.
+  The key benefit of the software stack is its portability, which is demonstrated by providing performance evaluations on a diversity of less common CPU/GPU platforms including RISC-V/PowerVR and ARM Mali. A comparison against the original AMD HIP platform provides a geometric mean of X.XX \pj{TODO (Henry)}, a reasonable price to pay for the enhanced portability.    
+  Although being a relatively young open source code base, \chipstar is now considered mature enough for wider testing and even production use, which is supported by successful porting of GAMESS, a complex HPC application which was deployed in the Aurora supercomputer.
 
 \end{abstract}
 
-%\begin{IEEEkeywords}
-%CUDA, HIP, OpenCL, SPIR-V, Portability, Shared Virtual Memory
-%\end{IEEEkeywords}
+\begin{IEEEkeywords}
+CUDA, HIP, OpenCL, SPIR-V, Portability, Shared Virtual Memory
+\end{IEEEkeywords}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\maketitle
+\section{Introduction}
 
-%\section{Introduction}
-
-\noindent Walled garden strategy is popular among market dominating companies. Its idea is to lock-in customers to company's products by making escaping the gates of the garden as costly as possible. NVIDIA's CUDA software platform is considered to be one of such walled gardens. It in part helps NVIDIA to expand and keep a foothold of their GPU market advantage, and at the same time maintain high innovation pace on the software APIs since there is no need to work with standardization committees that always have to aim for a consensus among multiple participating vendors.
+\IEEEPARstart{W}{alled} garden strategy is popular among market dominating companies. Its idea is to lock-in customers to company's products by making escaping the gates of the garden as costly as possible. NVIDIA's CUDA software platform is considered to be one of such walled gardens. It in part helps NVIDIA to expand and keep a foothold of their GPU market advantage, and at the same time maintain high innovation pace on the software APIs since there is no need to work with standardization committees that always have to aim for a consensus among multiple participating vendors.
 
 Naturally, for end-users and the competing hardware vendors, the situation of a single-vendor dictated API is not ideal. End-users would prefer open standard software interfaces that enable switching the targeted hardware without incurring significant non-recurring engineering costs required for porting the applications and libraries to a new software platform just to be able to utilize the newly purchased hardware optimally. Similarly, other hardware vendors, aiming to get their piece of the market pie, would prefer an API that is not controlled by a single vendor.
 
 AMD's ROCm~\cite{ROCm} software platform and its Heterogeneous-compute Interface for Portability (HIP) language~\cite{hip} helps escaping the CUDA walled garden by providing a route out from the NVIDIA CUDA platform to AMD's devices. HIP defines a subset of CUDA that is more easily portable to various hardware, thanks mainly to omitting various advanced features available in the later CUDA versions.
-
 %(some of these features are discussed in Section~\ref{subsection:compatgaps}).
 In order to enable easy automated transition path from CUDA applications, HIP is largely a copy of a CUDA C/C++ API subset with a few minor differences and renamed functions. HIP alleviates the CUDA portability problem, but doesn't solve it satisfactorily due to AMD targeting their self-specified low level ROCm APIs which are not actively supported on non-AMD platforms.
-%\kh{this is related to the other point I brought up. It can be read as AMD supporting other HW somehow, but I think the truth is, it's not supported at all, especially as of today ROCm only emits AMD GPU ISA}
-%\pj{OK. Then "for Portability" is quite misleading today. Do you have a reference to a manual or somewhere that says the CUDA output is not supported anymore?} 
-%\pv{CUDA output is still suported though there was a bug in it for a while which definitely indicates that portability is an afterthought for AMD}
+%\kh{this is related to the other point I brought up. It can be read as AMD supporting other HW somehow, but I think the truth is, it's not supported at all, especially as of today ROCm only emits AMD GPU ISA}\pj{OK. Then "for Portability" is quite misleading today. Do you have a reference to a manual or somewhere that says the CUDA output is not supported anymore?} 
 An open source HIP/CUDA software platform solely based on open standards with a sincere aim for cross-vendor portability is still lacking.
 
 With the \chipstar software stack described in this article we aim to help the CUDA/HIP
-portability challenge. In contrast to previous solutions that either require source-to-source conversion from CUDA programs~\cite{SYCLomatic}, that can lead to costly multiple codebase maintenance, or target binary-level compatibility of existing CUDA/HIP programs~\cite{ZLUDA} that rely on questionable reverse engineering of proprietary binary interfaces (a brittle longer-term strategy), \chipstar chooses a middle-ground approach which enables source-level compatibility of HIP/CUDA programs by compiling them to a runtime portable ``fat binary'' that utilizes solely open standards and can execute on any platform supporting the required standard features without recompilation.
+portability challenge. In contrast to previous solutions that either require source-to-source
+conversion from CUDA programs~\cite{SYCLomatic}, that can lead to costly multiple codebase maintainance, or target binary-level compatibility of existing CUDA/HIP programs~\cite{ZLUDA} that
+rely on questionable reverse engineering of proprietary binary interfaces (a brittle longer-term strategy), \chipstar chooses a middle-ground approach which enables source-level compatibility of HIP/CUDA programs by compiling them to a runtime portable ``fat binary'' that utilizes solely open standards and can execute on any platform supporting the required standard features without recompilation.
 
 With this article we make the following contributions:
 
 \begin{enumerate}
-  \item We publish internal design choices of the software platform \chipstar that enables porting applications from NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the cross-vendor open standards OpenCL and SPIR-V,
-  \item evaluate its performance in comparison to running the CUDA applications directly using NVIDIA SDK or converting the applications to a popular open-standard based CUDA alternative SYCL
-  %~\cite{SYCL}
-  and
-  \item demonstrate the usability of OpenCL as a portability layer to implement other languages/APIs on top. The portability is shown by providing performance numbers on a RISC-V CPU \& PowerVR GPU,  ARM CPU and GPU, as well as on discrete GPUs from all main vendors. 
+  \item We publish internal design choices of a software platform \chipstar that enables porting applications from NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the cross-vendor open standards OpenCL and SPIR-V,
+  \item evaluate its performance in comparison to running the CUDA applications directly using NVIDIA SDK or converting the applications to a popular open-standard based CUDA alternative SYCL~\cite{SYCL} and
+  \item demonstrate the usability of OpenCL as a portability layer to implement other languages/APIs on top. The portability is shown by providing performance numbers on a RISC-V CPU \& PowerVR GPU and ARM platforms as well as on discrete GPUs from all main vendors. 
 \end{enumerate}
 
 The rest of the article is structured as follows: Section~\ref{section:portabilityAPIs} discusses our rationale for choosing OpenCL~\cite{OpenCL} and its device-side program representation SPIR-V~\cite{SPIRV} as the core APIs to support runtime portability in \chipstar.
 Section~\ref{section:implementation} details the key technical issues in implementing the HIP/CUDA runtime on these APIs, while Section~\ref{section:compilation} focuses on the compilation aspects. Performance evaluation results are shown in Section~\ref{section:performance}. 
 Section~\ref{section:applications} presents the GAMESS porting case study using \chipstar, and finally Section~\ref{section:conclusions} concludes the article.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -269,7 +254,7 @@ Similarly to Level Zero after it, HSA made a choice to not define a higher-level
 Like is the case with the HSA runtime specification, however, the activity on the HSAIL spec has stalled.
 There was also a GCC-based frontend for consuming BRIGs in a target-portable fashion, but after activity on HSA quieted, the ``BRIG frontend'' was removed from the upstream GCC source code repository in a May 2021 commit.
 
-As a conclusion, while SPIR-V OpenCL environment support from processor vendors is not very extensive as of this writing, it seems to be still the best option for a cross-platform representation given it's an open standard defined democratically by multiple hardware vendors and is relied upon by OpenCL and Vulkan and SYCL implementations among others. \pv{might be interesting to give specific recent examples of SPIR-V adoption such as https://devblogs.microsoft.com/directx/directx-adopting-spir-v/ }
+As a conclusion, while SPIR-V OpenCL environment support from processor vendors is not very extensive as of this writing, it seems to be still the best option for a cross-platform representation given it's an open standard defined democratically by multiple hardware vendors and is relied upon by OpenCL and Vulkan and SYCL implementations among others. 
 %
 Thanks to open source tooling support available and useful SPIR-V producers such as \chipstar and DPC++ appearing, the list of supported targets is expected to grow in the future.
 
@@ -277,7 +262,6 @@ Thanks to open source tooling support available and useful SPIR-V producers such
 
 %The two core OpenCL features required by all CUDA/HIP applications when built with \chipstar are the SPIR-V input and coarse-grain SVM, both of which are optional features of the OpenCL 3.0 standard.
 %Although OpenCL has again risen in popularity in the recent years, thanks to its more easily minimally-implementable 3.0 version, as of this writing, only ARM GPUs, Intel GPUs and Intel CPUs have vendor-provided OpenCL drivers that support SPIR-V input.
-\pv{this is interesting - why comment it out? Also  what about RISCV}
 
 %Fortunately there are various active open source OpenCL implementation projects that can be used and expanded to fill up the lack of features in the proprietary drivers at least until they catch up. The two most vibrant ones are Rusticl and Portable Computing Language (PoCL~\cite{PoCL}). These two projects were used utilized to extend the portability of \chipstar-produced fat binaries to CPU targets.
 
@@ -346,7 +330,7 @@ is simple to implement with coarse grained SVM since by the coincidence of using
 a shared virtual memory allocation, the buffers are by default accessible in both the host and
 the device using the same pointer. However, the allocation might not be resident for the
 duration of the execution, for example, if a CPU device is allowed to swap out such
-allocations. \pv{I don't understand the following sentence.}That aspect, however, is only potentially inspectable as a performance difference.
+allocations. That aspect, however, is only potentially inspectable as a performance difference.
 \func{cudaHostRegister()} is a bit more challenging to implement on top of CG SVM since it
 allows registering a host address range to be a pinned region accessible both from the host and
 the device \textit{after}
@@ -354,13 +338,14 @@ the host memory has been allocated. Since the allocation might not be originally
 been allocated with the OpenCL SVM allocation API, but with a system memory allocator or even
 from the stack, to implement correct functionality in this case, \chipstar creates
 a shadow buffer using \func{clSVMAlloc()} and synchronizes it with the host region at
-kernel start and end points. OpenCL 2.1 added a new \func{clEnqueueSVMMigrateMem()} API that enables fine grained specification of where regions of SVM are migrated, but it is not useful for this case since the source of \func{cudaHostRegister()} can be any host memory area whereas the API handles only SVM allocations.
+kernel start and end points. OpenCL 2.1 added a new \func{clEnqueueSVMMigrateMem()} API that enables fine grained specification of where regions of SVM are migrated, but is not useful for this case since the source of \func{cudaHostRegister()} can be any host memory area whereas the API handles only SVM allocations.
 %\kh{OpenCL 2.1 added clEnqueueSVMMigrateMem to give hints to the runtime where to put the content of the buffer, might make sense to mention it here and say why it's not a good fit.}\pj{Done.}\kh{I think something at the end is missing here}
 % https://developer.nvidia.com/blog/unified-memory-cuda-beginners/
 
-The NVIDIA architectures post compute capability 6, support on-demand page migration which
-relies on the hardware memory management unit (page fault based buffer migrations) for coherence
-of the Unified Memory allocations. This frees the programmer from the need to perform explicit memory allocation and synchronization calls. This functionality maps to the Fine-Grained System SVM of OpenCL, but since hardware and driver support for it is very rare at the time of this writing, it is not yet implemented by \chipstar.
+The later NVIDIA architectures since compute capability 6 support on-demand page migration which
+relies on hardware memory management unit (page fault based buffer migrations) for coherence
+on the Unified Memory allocations. This frees the programmer from the need to perform explicit memory allocation and synchronization calls. The functionality maps to the Fine-Grained System SVM of OpenCL, but since its support by hardware and drivers is very rare at the time of this writing,
+it is not yet implemented by \chipstar.
 
 \subsection{Tasks and Events}
 
@@ -373,7 +358,7 @@ execution~\cite{OpenCL}.
 
 To facilitate out-of-order execution from CUDA/HIP programs the programmer has to rely
 on the explicit event synchronization and recording APIs which are implemented
-using OpenCL \pv{we don't use out-of-order queues} out-of-order queues by \chipstar, if supported by the target. The CUDA/HIP event API differs from the OpenCL: In CUDA/HIP the user is responsible for explicitly creating and recording events, while in OpenCL the runtime implicitly creates events when enqueuing commands. Recording events in \chipstar is implemented by creating a new marker-type \type{cl\_event} (\func{clEnqueueMarkerWithWaitList()}) when \func{cudaEventRecord()} is called.
+using OpenCL out-of-order queues by \chipstar, if supported by the target. The CUDA/HIP event API differs from the OpenCL: In CUDA/HIP the user is responsible for explicitly creating and recording events, while in OpenCL the runtime implicitly creates events when enqueuing commands. Recording events in \chipstar is implemented by creating a new marker-type \type{cl\_event} (\func{clEnqueueMarkerWithWaitList()}) when \func{cudaEventRecord()} is called.
 
 \subsection{Textures}
 
@@ -441,8 +426,8 @@ The offline compilation flow of \chipstar is based on the LLVM Project's~\cite{L
     \label{fig:compilation}
 \end{figure*}
 
-Most of the compilation related changes have been upstreamed to the LLVM project and very little compilation related functionality remains within the \chipstar code base. The notable exceptions are compiler passes that handle CUDA vs. OpenCL differences in \func{printf()}, implement a device side \func{abort()} feature, handling of the CUDA's device-side global variables, and an indirect memory access analyzer. The indirect memory access analyzer marks kernels that are known to not indirectly access allocations, which removes the unnecessary synchronizations for the majority of
-benchmarks seen so far. Otherwise, due to the CUDA's memory model, each launcher kernel can potentially access any previously allocated buffer, inducing significant unnecessary
+Most of the compilation related changes have been upstreamed to the LLVM project and very little compilation related functionality remains within the \chipstar code base. The notable exceptions are compiler passes that handle CUDA vs. OpenCL differences in \func{printf()}, implement a device side \func{abort()} feature, handling of the CUDA's device-side global variables, and an indirect memory access analyzer. The indirect memory access analyzer marks kernels that are known to not indirectly access allocations, which removes the unneccessary synchronizations for the majority of
+benchmarks seen so far. Otherwise, due to the CUDA's memory model, each launcher kernel can potentially access any previously allocated buffer, inducing significant unneccessary
 data synchronization overheads in the common case where the kernels only access buffers set through their arguments.
 
 %One of the performance-impacting device program passes done in \chipstar is indirect memory
@@ -478,17 +463,15 @@ Fig.~\ref{fig:online-compilation} shows the online compilation flow from SPIR-V 
 
 \subsection{Device Built-in Library}
 
-The \textit{chipstar} device-side library implements the HIP math API, by using a combination of OpenCL C math builtins, LLVM builtins, OCML (part of ROCm-Device-Libs), and custom implementations.
+The \textit{chipstar} device-side library implements the HIP math API, by using a combination of OpenCL C math builtins, OCML (part of ROCm-Device-Libs), and custom implementations.
 A lot of the functions in the math API have an equivalent OpenCL builtin with adequate accuracy guarantees with a few exceptions that cannot be mapped directly, and thus require software based emulation such as floating-point atomics on some devices. The main challenge in terms of a fast yet portable implementation of the functions are due to differences in math accuracy requirements between CUDA/HIP and OpenCL: most of the standard math functions of CUDA are defined in higher accuracy than what the OpenCL standard requires.
 
-Furthermore, CUDA/HIP defines a set of \textit{intrinsics}, which are faster yet less accurate versions of the standard functions. 
-This exposes a further difficulty when aiming for a portable, yet fast implementation:the level of accuracy achievable, depends heavily  on the targeted platform. Since CUDA is inherently meant not to be cross-vendor portable, the intrinsics are defined only to match the CUDA microarchitecture in an optimal manner, which might not be the case for other devices. 
+Furthermore, CUDA/HIP defines a set of \textit{intrinsics}, which are faster yet less accurate versions of the standard functions. This exposes a further difficulty when aiming for a portable yet fast implementation: It heavily depends on the targeted platform what level of accuracy is achievable while still enabling execution time benefits. Since CUDA is inherently meant not to be cross-vendor portable, the intrinsics are defined only to match the CUDA microarchitecture in an optimal manner, which might not be the case for other devices. 
 
 OpenCL covers the use case of accessing fast but inaccurate hardware operations by means of a relaxed mathematics flag that can be enabled at device program build time and with so called native built-in functions in the built-in kernel API. Unfortunately, neither of these are usable for implementing the CUDA intrinsics by default due to not guaranteeing enough accuracy: The relaxed math in OpenCL defines maximum rounding errors, but they are usually slightly less than what the CUDA intrinsics require. The OpenCL native built-in functions are even worse fit for this use since they guarantee nothing of the accuracy but leave it entirely up to the implementation. There is not even a possibility to query for the maximum error via a runtime API, but the accuracy must be discovered via trial-and-error or from documentation of the hardware vendor.
 %\pj{TODO: Check the HIP statements of guaranteed accuracy.}
-\pv{We could implement this check and runtime-link fastest options available?}
 
-The ``correctness first'' principle mandates the use of arithmetics that have  guaranteed accuracy, which means to not receive any performance benefits of simplified implementations. %  future work can include runtime checks?
+The ``correctness first'' principle requires implementing the functionality by default with guaranteed accurate enough arithmetics, which means to not receive any performance benefits of simplified implementations.
 %
 Correctness for the basic math functions would require software emulating them with added accuracy, of which performance impact would likely be too drastic to make \chipstar unusable for high performance workloads for which it is typically used. We chose a middle-ground where the basic math functions are implemented at the OpenCL accuracy by default and the intrinsics also utilize the default functions instead of the native functions, thus do not get any performance benefits from intrinsics. For the workloads we tested, this seemed to be a good enough solution.
 We plan to optimize this aspect in the future via a new standard extension with a set of builtins that guarantee the CUDA accuracy requirements to the application programmer while enabling the targeted platform to optimize and implement them as efficiently as possible.
@@ -496,7 +479,6 @@ We plan to optimize this aspect in the future via a new standard extension with 
 % https://github.com/CHIP-SPV/chip-spv/issues/222
 % https://intel.github.io/llvm-docs/cuda/cuda-vs-opencl-math-builtin-precisions.html
 
-% this section seems a bit out of place
 An LLVM pass is responsible to lowering texture object API based texture functions to OpenCL image fetches. The pass analyses endpoints of the texture objects by following their use-def and def-use chains. If the pass sees that a texture object is coming from a kernel parameter and it is only used by texture fetch calls for the same dimensionality, it will replace the texture object parameter with image and sampler parameters and translates the texture fetch calls with OpenCL image fetch calls of matching dimensionality which consume the new kernel parameter. 
 
 \subsection{OpenCL Extensions}
@@ -602,11 +584,6 @@ The OpenCL specification, on the other hand, doesn't have a warp concept, but th
 %\subsection{Pytorch-HIP}
 
 %\pj{TODO: Henry?}
-
-%\subsection{CyPy-HIP}
-
-%\pj{TODO: Paulius?}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -751,58 +728,22 @@ The performance of HIP benchmarks using \chipstar was shown to be on par or surp
 
 In the future, as \chipstar focuses on the HIP/CUDA API/language support, the main aspect that requires more engineering work is to expand the directly supported set of core libraries in the CUDA and HIP ecosystems to cover more real-world applications. On the HIP/CUDA core front, we aim to focus on the more advanced recent features such as collaborative groups as well as the standard extensions to bridge the remaining gaps between CUDA/HIP and OpenCL/SPIR-V.
 
-\subsection{References}
-Please note that the file \textsf{TRR.bst} is included with the class file
-for those authors using \BibTeX.
-The bst file works in a completely standard way:
-%\begin{verbatim}
-\bibliography{chipstar}
-\bibliographystyle{TRR}
-%\end{verbatim}
+\bibliography{IEEEabrv,chipstar}
+\bibliographystyle{IEEEtran}
+\newpage
 
-\section{Copyright Statement}
-Please  be  aware that the use of  this \LaTeXe\ class file is
-governed by the following conditions.
+\pj{Notes:
+\begin{itemize}
+    \item I merged the hipBLAS description to GAMESS for now.
+ %   \item I removed the debugging/profiling section. Not enough sensible content. We should state somewhere that thanks to using OpenCL we can use any tools that can profile OpenCL. Using the CPU target helps in debugging thanks to running gdb.
+ %   \item Can we add more porting case studies which demonstrate something different than GAMESS? CP2K? Is the pruned-down Pytorch-HIP sensible or too pruned down? Exabiome?
+    \item I removed the Libraries section as there was too little technical content. cuBLAS is too brief and highlights the negative fact that we support only a small subset of the NVIDIA or AMD ecosystem libraries.
+\end{itemize}}
 
-\subsection{Copyright}
-Copyright \copyright\ \volumeyear\ SAGE Publications Ltd,
-1 Oliver's Yard, 55 City Road, London, EC1Y~1SP, UK. All
-rights reserved.
-
-\subsection{Rules of Use}
-This class file is made available for use by authors who wish to
-prepare an article for publication in \textit{Transportation Research Record}.
-The user may not exploit any
-part of the class file commercially.
-
-This class file is provided on an \textit{as is}  basis, without
-warranties of any kind, either express or implied, including but
-not limited to warranties of title, or implied  warranties of
-merchantablility or fitness for a particular purpose. There will
-be no duty on the author[s] of the software or SAGE Publications Ltd
-to correct any errors or defects in the software. Any
-statutory  rights you may have remain unaffected by your
-acceptance of these rules of use.
-
-\begin{acks}
-This class file was developed by Sunrise Setting Ltd,
-Brixham, Devon, UK.\\
-Website: \url{http://www.sunrise-setting.co.uk}
-\end{acks}
-
-%\begin{thebibliography}{99}
-%\bibitem{R1}
-%Kopka,~H., and P. W. Daly. \textit{A Guide to \LaTeX}, 4th~edn.
-%Addison-Wesley, 2003.
-%
-%\bibitem{R2}
-%Lamport,~L. \textit{\LaTeX: a Document Preparation System},
-%2nd~edn. Addison-Wesley, 1994.
-%
-%\bibitem{R3}
-%Mittelbach,~F., and M. Goossens. \textit{The \LaTeX\ Companion},
-%2nd~edn. Addison-Wesley, 2004.
-%
-%\end{thebibliography}
+\pj{todo:
+  \begin{itemize}
+    \item We should add more pictures. It's too much of text without pics. Anyone any idea of what and where?
+    \item The article still reads a bit as a ``technical report'' instead of a ``scientific paper''. For more "scientific content" we should add a bit more complex technical content of some more trickier aspects, e.g., about the Graph implementation using command buffers. Ideas?
+\end{itemize}}
 
 \end{document}
