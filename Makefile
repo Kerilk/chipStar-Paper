@@ -1,6 +1,6 @@
 .PHONY: watch
 
-chipstar.pdf: chipstar.tex chipstar.bib relatedWork.tex
+chipstar.pdf: chipstar.tex chipstar.bib
 	pdflatex chipstar
 	bibtex chipstar
 	pdflatex chipstar

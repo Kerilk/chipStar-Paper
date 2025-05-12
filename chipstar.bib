@@ -99,6 +99,36 @@ series = {IWOCL 2017}
    note={\url{https://developer.nvidia.com/cuda-toolkit}},
 }
 
+@misc{intel-usm,
+    title={{Unified Shared Memory}},
+    note={\url{https://registry.khronos.org/OpenCL/extensions/intel/cl_intel_unified_shared_memory.html}}
+}
+
+@misc{llvm-spirv,
+    title = {{SPIR-V Translation Tool}},
+    note = {\url{https://github.com/KhronosGroup/SPIRV-LLVM-Translator}},
+}
+
+@misc{intel-buffer,
+    title={{Device Buffer Address}},
+    note={\url{https://github.com/KhronosGroup/OpenCL-Docs/pull/1159}}
+}
+
+@misc{intel-fp-fast,
+    title = {{Intel Floating Point Model}},
+    note = {\url{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-1/fp-model-fp.html}}
+}
+
+@misc{cuda-fast-math,
+    title = {{CUDA NVCC Fast Math}},
+    note = {\url{https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/}}
+}
+
+@misc{cuda-lockstep,
+    title = {CUDA Independent Thread Scheduling}, key = {cuda-lockstep},
+    note ={\url{https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/?utm_source=chatgpt.com#independent-thread-scheduling-7-x}},
+}
+    
 @misc{HSAIL,
    author={{Heterogeneous System Architecture Foundation}},
    title={{HSA Programmer's Reference Manual: HSAIL Virtual ISA and Programming Model, Compiler Writer, and Object Format (BRIG)}},
@@ -383,17 +413,6 @@ month = {nov}
   howpublished = "\url{https://docs.olcf.ornl.gov/systems/summit\_user\_guide.html}"
 }
 
-@misc{aurora, 
-  title = "{Aurora}",
-  howpublished = "https://www.alcf.anl.gov/aurora"
-}
-
-
-@misc{JLSE, 
-  title = "{Testbeds}",
-  howpublished = "https://www.jlse.anl.gov/hardware-under-development/"
-}
-
 @article{gamess,
 author = {Schmidt, Michael W. and Baldridge, Kim K. and Boatz, Jerry A. and
           Elbert, Steven T. and Gordon, Mark S. and Jensen, Jan H. and Koseki,
@@ -410,6 +429,17 @@ urlx = {https://onlinelibrary.wiley.com/doi/abs/10.1002/jcc.540141112},
 }
 %doi = {10.1021/acs.jctc.9b00409},
 
+@article{ulp-comparisons-paper,
+author = {Rydahl, Anton and Huber, Joseph and McDonough, Ethan Luis and Doerfert, Johannes},
+title = {Precision and Performance Analysis of {C} Standard Math Library Functions on {GPU}s},
+journal = {Proceedings of the ACM on Programming Languages},
+volume = {7},
+number = {OOPSLA2},
+year = {2023},
+pages = {1-26},
+doi = {10.1145/3624062.3624166},
+urlx = {https://dl.acm.org/doi/10.1145/3624062.3624166},
+}
 
 @incollection{gamess2,
 title = "Chapter 41 - Advances in electronic structure theory: GAMESS a decade later",
@@ -428,4 +458,98 @@ author = "Mark S. Gordon and Michael W. Schmidt"
     author={{Khronos\textregistered{} OpenCL Working Group}},
     howpublished={\url{https://www.khronos.org/registry/OpenCL/specs/3.0-unified/pdf/OpenCL\_API.pdf}},
     note={date accessed: \today},
+}
+
+@misc{imf-website,
+    title = {IMF Device Library},
+    url = {https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2024-2/imf-device-library.html},
+}
+
+@misc{hip-ulp,
+    title = {HIP Math Function Precision Guarantees},
+    url = {https://rocm.docs.amd.com/projects/HIP/en/latest/reference/math_api.html},
+}
+
+@misc{cuda-ulp,
+    title = {CUDA Math Function Precision Guarantees},
+    url = {https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/index.html#mathematical-functions-appendix},
+}
+
+@misc{opencl-ulp,
+    title = {OpenCL Math Function Precision Guarantees},
+    url = {https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html#relative-error-as-ulps},
+}
+
+
+@misc{mi250-spec,
+       title =  {AMD Instinct™ MI250 Accelerators},
+       url =    {https://www.amd.com/en/products/accelerators/instinct/mi200/mi250.html},
+       howpublished = {\url{https://www.amd.com/en/products/accelerators/instinct/mi200/mi250.html}},
+}
+
+@electronic{NVIDIA-A100,
+       title = "{NVIDIA} {A}100 {D}atasheet",
+       url =  "https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center /a100/pdf/nvidia-a100-datasheet-us-nvidia-1758950-r4-web.pdf",
+       key =  "NVIDIA100"
+     }
+
+@INPROCEEDINGS{a100_measured,
+  author={Kwack, JaeHyuk and Tramm, John and Bertoni, Colleen and Ghadar, Yasaman and Homerding, Brian and Rangel, Esteban and Knight, Christopher and Parker, Scott},
+  booktitle={2021 International Workshop on Performance, Portability and Productivity in HPC (P3HPC)}, 
+  title={Evaluation of Performance Portability of Applications and Mini-Apps across AMD, Intel and NVIDIA GPUs}, 
+  year={2021},
+  volume={},
+  number={},
+  pages={45-56},
+  keywords={Measurement;Productivity;Analytical models;Codes;Computational modeling;Conferences;Graphics processing units;high performance computing;performance portability;performance efficiency;roofline performance analysis;GPU;portable programming model;software framework},
+  doi={10.1109/P3HPC54578.2021.00008}}
+
+
+@misc{syevd-doc,
+       title =  {{oneMKL - Data Parallel C++ Developer Reference}},
+       url =    {https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-dpcpp/2025-0/syevd-usm-version.html},
+       howpublished = {\url{https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-dpcpp/2025-0/syevd-usm-version.html}},
+}
+
+@inproceedings{applencourt2024ponte,
+  title={Ponte Vecchio Across the Atlantic: Single-Node Benchmarking of Two Intel GPU Systems},
+  author={Applencourt, Thomas and Sadawarte, Aditya and Muralidharan, Servesh and Bertoni, Colleen and Kwack, JaeHyuk and Luo, Ye and Rangel, Esteban and Tramm, John and Ghadar, Yasaman and Tamerus, Arjen and others},
+  booktitle={IEEE International Workshop on Performance Modeling, Benchmarking and Simulation of High Performance Computer Systems},
+  year={2024}
+}
+
+
+
+@misc{mkl_shim,
+       title =  {{H4I-MKLShim}},
+       url =    {https://github.com/CHIP-SPV/H4I-MKLShim},
+       howpublished = {\url{https://github.com/CHIP-SPV/H4I-MKLShim}},
+}
+
+
+@misc{chipBLAS,
+       title =  {{H4I-HipBLAS}},
+       url =    {https://github.com/CHIP-SPV/H4I-HipBLAS},
+       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipBLAS}},
+}
+
+
+@misc{chipSOLVER,
+       title =  {{H4I-HipSOLVER}},
+       url =    {https://github.com/CHIP-SPV/H4I-HipSOLVER},
+       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipSOLVER}},
+}
+
+
+
+@misc{chipFFT,
+       title =  {{H4I-HipFFT}},
+       url =    {https://github.com/CHIP-SPV/H4I-HipFFT},
+       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipFFT}},
+}
+
+@misc{aurora,
+       title =  {{A}urora},
+       url =    {https://www.alcf.anl.gov/aurora},
+       howpublished = {\url{https://www.alcf.anl.gov/aurora}},
 }

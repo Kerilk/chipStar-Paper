@@ -1,0 +1,178 @@
+\section{Unimplemented HIP APIs}
+There are a total of 107 HIP API calls that are unimplemented in the current version. 
+None of the following APIs have been required in the applications that have been tested which is how features are prioritized for implementation.
+Some of these can be trivially implemented, others might require additional extensions to OpenCL.
+
+\begin{itemize}
+
+    \item Mipmapped Array Management:
+    This API allows for the creation and management of mipmapped arrays in device memory.
+    OpenCL does not support mipmapped arrays thus an extension would be required.
+    \begin{itemize}
+        \item \texttt{hipFreeMipmappedArray}: Frees a mipmapped array
+        \item \texttt{hipGetMipmappedArrayLevel}: Gets a specific level of a mipmapped array
+        \item \texttt{hipMallocMipmappedArray}: Allocates a mipmapped array in device memory
+    \end{itemize}
+    
+    \item 3D Array Management:
+    This API allows for the creation of 3D arrays in device memory.
+    \begin{itemize}
+        \item \texttt{hipArray3DCreate}: Creates a 3D array in device memory
+        \item \texttt{hipGetChannelDesc}: Gets the channel descriptor for an array
+    \end{itemize}
+    
+    \item Device Management:
+    \begin{itemize}
+        \item \texttt{hipDeviceGetLimit}: Gets the limit for a given device attribute
+        \item \texttt{hipDeviceGetP2PAttribute}: Gets peer-to-peer attributes between devices
+        \item \texttt{hipDeviceGetUuid}: Gets a UUID for a device
+        \item \texttt{hipDeviceSetLimit}: Sets the limit for a given device attribute
+        \item \texttt{hipGetDeviceFlags}: Gets the flags for the current device
+    \end{itemize}
+    
+    \item Virtual Memory Management:
+    This group of APIs allows for the allocation and mapping of virtual addresses. 
+    This API API allows developers to explicitly manage large datasets by decoupling virtual and physical memory.
+    It enables dynamic mapping and unmapping of memory, efficient reuse of limited physical memory, and fine-grained control over memory access permissions.
+    The main benefits include handling datasets larger than physical memory, reducing fragmentation, and improving performance in applications with complex memory management needs. 
+    This functionality is not supported in OpenCL thus an extension would be required.
+    \begin{itemize}
+        \item \texttt{hipMemAddressReserve}: Reserves a virtual address range
+        \item \texttt{hipMemAddressFree}: Frees a virtual address range
+        \item \texttt{hipMemMap}: Maps previously-allocated memory
+        \item \texttt{hipMemUnmap}: Unmaps previously mapped memory
+        \item \texttt{hipMemGetAllocationGranularity}: Gets memory allocation granularity
+        \item \texttt{hipMemCreate}: Creates a memory allocation handle
+    
+    \item Memory Management:
+    \begin{itemize}
+        \item \texttt{hipMemAllocPitch}: Allocates pitched memory
+        \item \texttt{hipMemcpyPeer}: Peer-to-peer memory copy
+        \item \texttt{hipMemcpyPeerAsync}: Asynchronous peer-to-peer memory copy
+    \end{itemize}
+    
+    \item Stream Ordered Memory Allocator:
+    Stream Ordered Memory Allocator (SOMA) allows for asynchronous memory allocation and deallocation. 
+    This is useful for applications that require high-throughput memory allocations and deallocations, 
+    such as deep learning training and inference frameworks. Given chipStar's current focus on classical HPC, 
+    this feature has not been a priority. See \section{AI/ML Support} for more details.
+    \begin{itemize}
+        \item \texttt{hipMallocAsync}: Asynchronous memory allocation
+        \item \texttt{hipFreeAsync}: Asynchronous memory deallocation
+        \item \texttt{hipDeviceGetDefaultMemPool}: Gets the default memory pool for a device
+        \item \texttt{hipDeviceGetMemPool}: Gets the current memory pool for a device
+        \item \texttt{hipDeviceSetMemPool}: Sets the current memory pool for a device
+        \item \texttt{hipMemPoolCreate}: Creates a memory pool
+        \item \texttt{hipMemPoolDestroy}: Destroys a memory pool
+        \item \texttt{hipMemPoolExportPointer}: Exports a memory pool pointer
+        \item \texttt{hipMemPoolExportToShareableHandle}: Exports a memory pool to a shareable handle
+        \item \texttt{hipMemPoolGetAccess}: Gets memory pool access permissions
+        \item \texttt{hipMemPoolGetAttribute}: Gets memory pool attributes
+        \item \texttt{hipMemPoolImportFromShareableHandle}: Imports a memory pool from a shareable handle
+        \item \texttt{hipMemPoolImportPointer}: Imports a memory pool pointer
+        \item \texttt{hipMemPoolSetAccess}: Sets memory pool access permissions
+        \item \texttt{hipMemPoolSetAttribute}: Sets memory pool attributes
+        \item \texttt{hipMemPoolTrimTo}: Trims a memory pool to a specified size
+        \item \texttt{hipMallocFromPoolAsync}: Asynchronously allocates from a memory pool
+    \end{itemize}
+    
+    \item IPC (Inter-Process Communication):
+    \begin{itemize}
+        \item \texttt{hipIpcCloseMemHandle}: Closes an IPC memory handle
+        \item \texttt{hipIpcGetEventHandle}: Gets an IPC event handle
+        \item \texttt{hipIpcGetMemHandle}: Gets an IPC memory handle
+        \item \texttt{hipIpcOpenEventHandle}: Opens an IPC event handle
+        \item \texttt{hipIpcOpenMemHandle}: Opens an IPC memory handle
+    \end{itemize}
+    
+    \item Stream and Event Management:
+    \begin{itemize}
+        \item \texttt{hipExtStreamCreateWithCUMask}: Creates a stream with compute unit mask
+        \item \texttt{hipExtStreamGetCUMask}: Gets the compute unit mask for a stream
+        \item \texttt{hipStreamAttachMemAsync}: Attaches memory to a stream asynchronously
+        \item \texttt{hipStreamGetCaptureInfo}: Gets stream capture information
+        \item \texttt{hipStreamGetDevice}: Gets the device associated with a stream
+        \item \texttt{hipStreamIsCapturing}: Checks if a stream is being captured
+        \item \texttt{hipStreamUpdateCaptureDependencies}: Updates stream capture dependencies
+        \item \texttt{hipStreamWaitValue32/64}: Waits for a 32/64-bit value in a stream
+        \item \texttt{hipStreamWriteValue32/64}: Writes a 32/64-bit value in a stream
+        \item \texttt{hipThreadExchangeStreamCaptureMode}: Exchanges stream capture mode
+    \end{itemize}
+    
+    \item Cooperative Kernel Management:
+    Cooperative kernels allow for performance synchronization across the entire kernel invocation, 
+    not just within a threadblock. This functionality is not supported in OpenCL thus an extension would be required.
+    \begin{itemize}
+        \item \texttt{hipLaunchCooperativeKernel}: Launches a cooperative kernel
+        \item \texttt{hipLaunchCooperativeKernelMultiDevice}: Launches cooperative kernels on multiple devices
+        \item \texttt{hipModuleLaunchCooperativeKernel}: Launches a cooperative kernel from a module
+    \end{itemize}
+    
+    \item Kernel and Function Management:
+    \begin{itemize}
+        \item \texttt{hipFuncGetAttribute}: Gets function attributes
+        \item \texttt{hipFuncSetAttribute}: Sets function attributes
+        \item \texttt{hipFuncSetSharedMemConfig}: Sets shared memory configuration
+        \item \texttt{hipLaunchHostFunc}: Launches a host function in a stream
+        \item \texttt{hipModuleGetTexRef}: Gets a texture reference
+        \item \texttt{hipSetupArgument}: Sets up kernel arguments (legacy API)
+    \end{itemize}
+    
+    \item Occupancy and Performance:
+    \begin{itemize}
+        \item \texttt{hipModuleOccupancyMaxActiveBlocksPerMultiprocessor}: Calculates occupancy
+        \item \texttt{hipModuleOccupancyMaxActiveBlocksPerMultiprocessorWithFlags}: Calculates occupancy with flags
+        \item \texttt{hipModuleOccupancyMaxPotentialBlockSizeWithFlags}: Calculates potential block size with flags
+        \item \texttt{hipOccupancyMaxActiveBlocksPerMultiprocessor}: Calculates maximum active blocks
+        \item \texttt{hipOccupancyMaxActiveBlocksPerMultiprocessorWithFlags}: Calculates maximum active blocks with flags
+        \item \texttt{hipOccupancyMaxPotentialBlockSize}: Calculates potential block size
+        \item \texttt{hipProfilerStart}: Starts the profiler
+        \item \texttt{hipProfilerStop}: Stops the profiler
+    \end{itemize}
+    
+    \item Graph Management:
+    Currently, chipStar provides a basic implementation of the graph API. 
+    Graph operations are recorded and executed by replaying the same sequence of non-graph APIs. 
+    While most unit tests pass, the naive implementation provides no performance benefits over the non-graph APIs.
+    Properly implemeting the Graph API requires support for the \texttt{cl\_khr\_command\_buffer} extension. 
+    Currently, only the PoCL implementation supports this extension.
+    
+    \begin{itemize}
+        \item \texttt{hipGraphAddMemAllocNode}: Adds memory allocation node to a graph
+        \item \texttt{hipGraphAddMemFreeNode}: Adds memory free node to a graph
+        \item \texttt{hipGraphDebugDotPrint}: Prints graph in DOT format
+        \item \texttt{hipGraphInstantiateWithFlags}: Instantiates a graph with flags
+        \item \texttt{hipGraphKernelNodeCopyAttributes}: Copies kernel node attributes
+        \item \texttt{hipGraphKernelNodeGetAttribute}: Gets kernel node attributes
+        \item \texttt{hipGraphKernelNodeSetAttribute}: Sets kernel node attributes
+        \item \texttt{hipGraphMemAllocNodeGetParams}: Gets memory allocation node parameters
+        \item \texttt{hipGraphMemFreeNodeGetParams}: Gets memory free node parameters
+        \item \texttt{hipGraphNodeGetEnabled}: Gets if a node is enabled
+        \item \texttt{hipGraphNodeSetEnabled}: Sets if a node is enabled
+        \item \texttt{hipGraphReleaseUserObject}: Releases a user object from a graph
+        \item \texttt{hipGraphRetainUserObject}: Retains a user object in a graph
+        \item \texttt{hipGraphUpload}: Uploads a graph to a stream
+        \item \texttt{hipDeviceGetGraphMemAttribute}: Gets graph memory attributes for a device
+        \item \texttt{hipDeviceGraphMemTrim}: Trims device graph memory
+        \item \texttt{hipDeviceSetGraphMemAttribute}: Sets graph memory attributes for a device
+    \end{itemize}
+    
+    \item Miscellaneous:
+    \begin{itemize}
+        \item \texttt{hipDrvGetErrorName}: Gets the name of a driver error
+        \item \texttt{hipDrvGetErrorString}: Gets the description of a driver error
+        \item \texttt{hipDrvMemcpy3D}: 3D memory copy (driver API)
+        \item \texttt{hipDrvMemcpy3DAsync}: Asynchronous 3D memory copy (driver API)
+        \item \texttt{hipDrvPointerGetAttributes}: Gets pointer attributes (driver API)
+        \item \texttt{hipMemRangeGetAttribute}: Gets attributes of a memory range
+        \item \texttt{hipMemRangeGetAttributes}: Gets multiple attributes of a memory range
+        \item \texttt{hipPointerGetAttribute}: Gets a single attribute of a pointer
+        \item \texttt{hipSignalExternalSemaphoresAsync}: Signals external semaphores
+        \item \texttt{hipWaitExternalSemaphoresAsync}: Waits on external semaphores
+        \item \texttt{hipUserObjectCreate}: Creates a user object
+        \item \texttt{hipUserObjectRelease}: Releases a user object
+        \item \texttt{hipUserObjectRetain}: Retains a user object
+    \end{itemize}
+
+\end{itemize}\textbf{}
+\end{itemize}\textbf{}

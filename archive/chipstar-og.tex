@@ -75,7 +75,7 @@
 %\author{pekka.jaaskelainen }
 %\date{March 2023}
 
-\author{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Jenny Chen, Kevin Harms, Paulius Velesko, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Karol Herbst, Brice Videau
+\author{Paulius Velesko, Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarkar Sarbojit, Ben Ashbaugh, Colleen Bertoni, Jenny Chen, Kevin Harms, Philip C. Roth, Rahulkumar Gaytri, Jisheng Zhao, Karol Herbst, Brice Videau
         % <-this % stops a space
 \thanks{Pekka Jääskeläinen, Henry Linjamäki, Michal Babej, Peng Tu, Sarbojit Sarkar and Ben Ashbaugh(?) are with Intel Corporation. \textit{Corresponding author: Pekka Jääskeläinen, email: pekka.jaaskelainen@intel.com}.}
 \thanks{Pekka Jääskeläinen is also with . }
@@ -531,7 +531,7 @@ cl\_khr\_subgroup\_ballot           & Warp-level ballot operations. & Public. \\
 cl\_khr\_subgroup\_shuffle          & Warp-level shuffle operations. & Public. \\
     \hline
     \end{tabular}
-    \caption{OpenCL 3.0 standard extensions that \chipstar can use currently or will use in the future to implement CUDA/HIP features if the application uses them. Status describes the state of the extension at the time of this article's publication. }
+    \caption{OpenCL 3.0 standard extensions that \chipstar can use currently or will use in the future to implement CUDA/HIP features if the application uses them. Status describes the state of the extension at the time of this article's publication. \pj{Pekka TODO}}
     \label{table:extensions}
 \end{table*}
 
@@ -686,7 +686,7 @@ To test the extent of portability of the runtime API layer based on the OpenCL s
 
 \begin{figure}[tb]
       \includegraphics[scale=0.5]{figs/hecbench_i9_12900_igpu_vs_cpu.pdf}
-      \caption{Speed on Intel i9 12900 iGPU speed normalized to CPU. \pj{TODO Michal:} Total of N benchmarks with geom. mean of X.}
+      \caption{Speed on Intel i9 12900 iGPU speed normalized to CPU. \pj{TODO :} Total of N benchmarks with geom. mean of X.}
       \label{fig:intel-i9-cpu-vs-igpu}
 \end{figure}
 
@@ -745,5 +745,4 @@ In the future, as \chipstar focuses on the HIP/CUDA API/language support, the ma
     \item We should add more pictures. It's too much of text without pics. Anyone any idea of what and where?
     \item The article still reads a bit as a ``technical report'' instead of a ``scientific paper''. For more "scientific content" we should add a bit more complex technical content of some more trickier aspects, e.g., about the Graph implementation using command buffers. Ideas?
 \end{itemize}}
-
 \end{document}

@@ -1,0 +1,142 @@
+\section{HPC Application Case Study: GAMESS-GPU-HF}
+\label{section:applications}
+%\cb{TODO: add some context to try to get this section to fit in with the rest of the paper}
+
+%As discussed, one benefit of \chipstar is that it enables applications written in HIP to be run on any system that supports SPIR-V and OpenCL. 
+
+In order to further test \chipstar in practice, we ported a %set of 
+complex HIP/CUDA-based HPC application and its dependency library using \chipstar. The test environment for the experiment was the Aurora supercomputer utilizing Intel Datacenter Intel® Data Center GPU Max Series (referred to from here on as PVCs, as in Ponte Vecchio) as the accelerator part~\cite{aurora}.
+%The porting examples are described in the following subsections with the performance evaluations
+%presented in the next section.
+%The applications and which features or libraries of \chipstar they use are shown in Table~\ref{tab:applications}.
+
+\subsection{GAMESS-GPU-HF}
+
+General Atomic and Molecular Electronic Structure System (GAMESS~\cite{gamess,gamess2}) is a quantum chemistry software package which implements many electronic structure methods. 
+The code base is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods were implemented in CUDA which scales to 4096 nodes on Summit, an Nvidia V100-based supercomputer \cite{gamess_cuda1, gamess_cuda2, summit}.
+In this porting case we focused on the Hartee-Fock (HF) algorithm used by a CUDA library in GAMESS described in \cite{gamess_cuda1}, which has been ported to HIP. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.  %The HF method determines the molecular energy of a system by solving a set of non-linear eigenvalue equations iteratively.  
+The HF method primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed, and computation of eigenvectors.
+% Colleen> I'm ok to remove the discussion of the basis functions if the code works for all of them :) The two electron integrals are grouped into different classes, depending on the angular momentum of the basis functions used. The basis functions here are $s-$ ,$p-$, and $d-$, where $s$ is least complex and $d$ is the most complex.
+
+The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs. The kernels total over 20,000 lines of HIP/CUDA  code. The matrix contractions and eigensolves are done on the GPU via calls to the HIP math libraries hipBLAS and hipSOLVER.
+
+%From the non-basic features of HIP supported by \chipstar, the kernels use shared memory with \func{\_\_syncthreads()} calls to ensure copying values from global memory to shared memory completed for the threadblock before using it.\pj{Colleen: does it use any other "special" CUDA/HIP features on the host side?}
+%
+
+%\subsection{hipBLAS and hipSOLVER}
+
+Since the application uses ROCm software platform libraries hipBLAS and hipSOLVER, they needed to be ported as well. The required interfaces of these libraries were implemented for Intel hardware by using Intel oneMKL as a backend. This is done with two layers: first, a shim library, H4I-MKLShim \cite{mkl_shim}, which provides shims for the SYCL-based oneMKL functions. This is designed to be used by other libraries which wish to call the oneMKL functions from a different API, such as hipBLAS, to use Intel GPUs. The chipStar project currently implements hipBLAS, hipSOLVER, and hipFFT in the libraries H4I-HipBLAS \cite{chipBLAS}, H4I-HipSOLVER \cite{chipSOLVER}, H4I-HipFFT \cite{chipFFT}, respectively. These allow calls to hipBLAS, hipSOLVER, and hipFFT functions to run on Intel GPUs.
+% This shim layer was necessary because the HIP compilers cannot directly call the SYCL-based MKL functions, and the Intel SYCL compiler cannot call the SYCL-based MKL functions.  %Applications calling hipBLAS functions can thus run on Intel hardware without any code changes. 
+%For this porting case, a SYCL interoperatibility feature was added to \chipstar which was used to invoke oneMKL’s SYCL functions efficiently.
+
+%hipBLAS and hipSOLVER calls are used to form intermediates. The main hipBLAS calls are hipblasDscal, hipblasDgemm, hipblasDcopy, hipblasDaxpy, hipblasDdot, hipblasDgemv, hipblasDgeam, and the main hipSOLVER call is hipsolverDsyevd.
+
+%\pj{From these it would be good to summarize for example, that they cover the key blas functionality.} These are used at each iteration of the HF algorithm to (among other things) diagonalize the Fock matrix and construct the density matrix, which are key blas functionalities in the HF algorithm.
+
+%\subsection{Porting Notes}
+
+In terms of functionality, the HF code compiles and was verified to run correctly with \chipstar on PVCs. The porting effort was relatively low, with one exception due to a small but significant specification difference in CUDA vs. OpenCL related to kernel thread synchronization: In CUDA group barriers are not counting in exited threads, meaning that there can be early returns from the kernel by a subset of the threads after which it is still legal to perform barrier synchronization with the remaining subset -- the exited threads are just not counted in. In OpenCL this case is undefined behavior and in many implementations can lead to a deadlock. To tackle this gap, an OpenCL extension adding a group barrier with similar semantics would be needed (see \textit{cl\_ext\_alive\_only\_barrier} in Table~\ref{table:extensions}).
+
+\subsubsection{Performance}
+
+%The GAMESS port was executed with the PVC component of the Aurora installation. 
+The performance of the HF code was measured by compiling and running the same HIP source code on a PVC through \chipstar (Release 1.2.1), an Nvidia A100 through CUDA 12.2.2 with ROCm 6.0.0, and an AMD MI250 through ROCm 6.3.0. To be clear, this is comparing \chipstar on the PVC GPU to native HIP and CUDA on the Nvidia and AMD GPUs. 
+%\pj{Is it running the HIP code via AMD HIP wrapper or the CUDA version?} \cb{via the AMD HIP wrapper -- everything is using the same HIP code (I put all the runscripts and output on the github https://github.com/colleeneb/gamess\_libcchem\_hip for the record. so it was https://github.com/colleeneb/gamess\_libcchem\_hip/blob/hip\_dev\_for\_intel/hip\_nvidiaa100.sh)} 
+% Not sure if this context is needed here: --PJ
+%The AMD MI250 is part of the JLSE cluster at ANL and is a Supermicro AS-4124GQ-TNMI composed of 2 AMD EPYC 7713 64c (Milan) CPUs and 4 AMD Instinct MI250~\cite{JLSE}. The Nvidia A100 is also part of the JLSE cluster and is composed of a AMD 7532 and 1 Nvidia A100 with 40GB and PCIe 4.0. 
+To investigate the performance, a HF energy computation of a cluster of 150 water molecules with a STO-3G basis set was run 10 times on PVC, A100, and MI250. The average and standard deviation of the runtimes are displayed in Table~\ref{table:gamess_perf}.
+
+
+Table~\ref{table:gamess_perf} shows that the total HF energy calculation time (the SCF time) on the Nvidia A100 is shortest (1.66 s) and on one GCD of an AMD MI250 is the longest (4.71 s). The Intel PVC time, through \chipstar with the OpenCL backend, is 2.8s, about 1.7x the runtime on the A100 GPU. From comparing the memory bandwidth and peak double-precision floating point operations possible on an A100 \cite{a100_measured} and a PVC stack \cite{applencourt2024ponte}, we see that we expect memory-bound codes on a PVC stack to take about 1.3x (1.3 $\frac{TB}{s}$ / 1.0 $\frac{TB}{s}$) the time on an A100 and compute-bound codes on a PVC stack to take about 0.56x (9.4 $\frac{TFlop}{s}$ / 17.0 $\frac{TFlop}{s}$) the time on an A100. Note that the 1.3x and 0.56x are upper bounds for performance since not all the runtime is on the GPUs, and the GPU library is a complex code with multiple asynchronous kernels and memory copies. A full performance analysis is out of the scope of this paper. 
+
+Although the Intel PVC time through \chipstar is 1.7x slower than the A100 time, this is not too far from the 1.3x and 0.56x upper bound expectations based on hardware comparisons. The runtime on a PVC stack with \chipstar is competitive with the runtime on other architectures and roughly within expectations based on the compute- and memory-peak comparisons of a PVC stack and an A100. Thus we expect HIP applications currently running on Nvidia and AMD GPUs to run and perform reasonably well with \chipstar on Intel GPUs.
+
+%To investigate the time differences, Table~\ref{table:gamess_perf} shows a breakdown of the SCF time. The SCF time of the GAMESS simulation can be split into two main parts: Fock time (time for computation of electron repulsion integrals and Fock matrix), and DIIS time (time for solving a set of linear equations). The Fock build time is primarily hand-written HIP kernels. The DIIS time is primarily BLAS and LAPACK calls, including calls to the hipSOLVER function hipsolverDsyevd. The remainder of the SCF time is preparing matrices and copying them to GPUs, and generally not a large portion. 
+
+%Since the time on A100 is the shortest, Table~\ref{table:gamess_perf} shows the ratio of the SCF time, the Fock time, and the DIIS time relative to the "best" A100 time for all architectures. Compared to the A100 times, the SCF times on one Stack of the Intel PVC with the Level Zero and OpenCL backends are 1.6 and 1.7x respectively the A100 time. The SCF time on one GCD of an AMD MI250 is 2.8x the A100 time.  From the time comparison of the Fock and DIIS times, we see that the Fock times for on Stack of PVC (one GCD of MI250) are  are about 1.4x (1.8x) that of an A100. The Fock times contain the hand-written kernels on the GPU, and matrix setups on the CPU, and we see that these are competitive with the A100 times. From comparing the memory bandwidth and peak double-precision floating point operations possible on A100 \cite{a100_measured} and a PVC stack \cite{applencourt2024ponte}, we see that we expect memory-bond codes on a PVC stack to take about 1.3x (1.3 $\frac{TB}{s}$ / 1.0 $\frac{TB}{s}$) the time on an A100 and compute-bound codes on a PVC stack to take about 0.56x (9.4 $\frac{TFlop}{s}$ / 17.0 $\frac{TFlop}{s}$) the time on an A100. The hand-written kernels with a large amount of register spilling are likely memory-bound. Thus for these kernels, the performance is roughly as expected. However, the DIIS times on one Stack of PVC with the Level Zero backend (one GCD of MI250) are 2.4x (7.3x) that on A100. The DIIS times are primarily hipBLAS and hipSOLVER calls. There is negligible additional overhead from the hipSOLVER wrappers on top of Intel's MKL, so the slowdown is from the time of these calls being relatively slower on PVC and MI250 than on A100. The hipSOLVER call with the largest amount of runtime in this code is `hipsolverDsyevd`. For the PVC runs, chipStar's hipsolverDsyevd port calls MKL's syevd under the hood, which is hybrid and runs on both the CPU and GPU. \cite{syevd-doc} This different implementation from Nvidia's syevd could explain the timing difference. 
+%We note that since MKL's implementation uses both the GPU and CPU, to get the reported performance we needed to tune the number of OpenMP CPU threads. Additionally, the `NEO\_CACHE\_PERSISTENT=1` environment variable was essential to performance of the MKL functions, as it can reuse a previously built binary for the offloaded MKL kernels (instead of compiling them Just-in-time).
+
+
+%\pj{TODO:  But is the LZ number good or not - how is A100 vs. PVC in terms of peak perf?} 
+%\cb{Added, let me know if it's enough.}\pj{good now}
+
+
+\begin{table}[t]
+\centering
+\begin{tabular}{cccl}
+\cline{1-3}
+ &
+  \begin{tabular}[c]{@{}c@{}}Average SCF Time (s) \\ (Ratio over\\ Nvidia A100)\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}Standard \\ Deviation\end{tabular} &
+   \\ \cline{1-3}
+Nvidia A100          & \begin{tabular}[c]{@{}c@{}}1.66\\ (1x)\end{tabular} & 0.01                 &  \\ \cline{1-3}
+\begin{tabular}[c]{@{}c@{}}AMD MI250\\ (one GCD)\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}4.71\\ (2.8x)\end{tabular} &
+  0.01 &
+   \\ \cline{1-3}
+\begin{tabular}[c]{@{}c@{}}Intel PVC\\ (one Stack,\\ OpenCL)\end{tabular} &
+  \begin{tabular}[c]{@{}c@{}}2.84\\ (1.7x)\end{tabular} &
+  0.03 &
+   \\ \cline{1-3}
+\multicolumn{1}{l}{} & \multicolumn{1}{l}{}                                & \multicolumn{1}{l}{} & 
+\end{tabular}
+    \caption{Timing comparison for SCF, Fock, and DIIS times (s) for GPU integral code across Intel, AMD, and Nvidia. Average over 10 runs.}
+    \label{table:gamess_perf}
+\end{table}
+
+
+% \begin{table*}[ht]
+% \begin{tabular}{lccccl}
+% \cline{1-5}
+% \multicolumn{1}{c}{} &
+%   Nvidia A100 &
+%   \begin{tabular}[c]{@{}c@{}}AMD MI250\\ (one GCD)\end{tabular} &
+%   \begin{tabular}[c]{@{}c@{}}Intel PVC \\ (one Stack, Level Zero)\end{tabular} &
+%   \begin{tabular}[c]{@{}c@{}}Intel PVC\\ (one Stack, OpenCL)\end{tabular} &
+%    \\ \cline{1-5}
+% Average SCF Time (Ratio over Nvidia A100)  & 1.66 (1x)            & 4.71 (2.8x)        & 2.71 (1.6x)          & 2.84 (1.7x)          &  \\
+% Standard Deviation of SCF time                   & 0.01                 & 0.01                 & 0.02                 & 0.03                 &  \\ \cline{1-5}
+% Average Fock Time (Ratio over Nvidia A100) & 1.20 (1x)            &  2.11 (1.8x)          & 1.64 (1.4x)          & 1.67 (1.4x)          &  \\
+% Average DIIS Time (Ratio over Nvidia A100) & 0.34 (1x)            &  2.51 (7.4x)        & 0.82 (2.4x)          & 0.90 (2.6x)          &  \\ \cline{1-5}
+%                                                  & \multicolumn{1}{l}{} & \multicolumn{1}{l}{} & \multicolumn{1}{l}{} & \multicolumn{1}{l}{} & 
+% \end{tabular}
+%     \caption{Timing comparison for SCF, Fock, and DIIS times (s) for GPU integral code across Intel, AMD, and Nvidia}
+%     \label{table:gamess_perf}
+% \end{table*}
+
+
+% \begin{table*}[ht]
+% \begin{tabular}{lcccl}
+% \cline{1-4}
+% \multicolumn{1}{c}{} & Nvidia A100 & \begin{tabular}[c]{@{}c@{}}AMD MI250\\ (one GCD)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Intel PVC \\ (one Stack)\end{tabular} &  \\ \cline{1-4}
+% Measured memory bandwidth (TB/s)                      & 1.4                  & 1.3                  & 1.0                  &  \\
+% Theoretical double precision peak flop-rate (Tflop/s) & 9.7                  & 22.7                 & 17.0                 &  \\ \cline{1-4}
+%                                                       & \multicolumn{1}{l}{} & \multicolumn{1}{l}{} & \multicolumn{1}{l}{} & 
+% \end{tabular}
+%     \caption{Peak Performance and Memory Bandwidth Between Nvidia A100\cite{NVIDIA-A100}, AMD MI250 \cite{mi250-spec}, and Intel PVC \cite{PVC_paper}}
+%     \label{table:system_compare}
+% \end{table*}
+
+% The measured bandwidths for A100 and MI250 are from running BabelStream (\cite{}) and from \cite{PVC_paper} for PVC.
+
+%\begin{table*}[ht]
+%\centering
+%\begin{tabular}{l|l|l|l|l}
+% &
+%  Fock time &
+%  DIIS time without hipsolverDsyevd &
+%  hipsolverDsyevd time &
+%  Remainder \\
+% &
+%  (ratio over A100 time) &
+%  (ratio over A100 time) &
+%  (ratio over A100 time) &
+%  (ratio over A100 time) \\ \hline
+%Nvidia   A100       & 1.46 (1x) & 0.183 (1x) & 0.230 (1x) & 0.128 (1x) \\
+%AMD MI250           & 2.03 (1.4x)  & 0.12 (0.7x)  &  25.10 (109x) & 0.09 (0.7x) \\
+%Intel PVC   (OpenCL) & 4.29 (2.9x)  & 4.73 (25.8x) & 12.34 (53.7x) & 0.54 (4.2x) \\
+%Intel PVC   (LevelZero)    & 3.11 (2.1x) & 0.954 (5.2x) & 0.984 (4.3x) & 0.262 (2x)
+%\end{tabular}
+%    \caption{Timing breakdown of the GPU integral HIP code across Intel, AMD, and Nvidia}
+%    \label{table:gamess_breakdown}
+%\end{table*}
