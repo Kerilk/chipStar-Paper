@@ -569,7 +569,7 @@ Since both \chipstar and \gls{dpc} can use OpenCL as a backend, the evaluations 
 
 \begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{Figures-2025/chipStar-vs-sycl-speedup-truncated.pdf}
+    \includegraphics[width=1\linewidth]{chipStar-vs-sycl-speedup-truncated.pdf}
     \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{with relaxed math, excluding 20 benchmarks where the performance difference was negligible }}
     \label{fig:best-vs-best}
 \end{figure*}
@@ -604,7 +604,7 @@ To test for this, we isolated the outperforming benchmarks and performed a \myhl
 
 \begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{Figures-2025/chipStar-vs-sycl-scaled.pdf}
+    \includegraphics[width=1\linewidth]{chipStar-vs-sycl-scaled.pdf}
     \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{at 1x and 5x problem sizes}.}
     \label{fig:chipstar-outperform-sycl-1x}
 \end{figure*}
@@ -629,7 +629,7 @@ It is interesting to compare the performance of CUDA programs compiled and ran u
 
 \begin{figure*}
        \centering
-       \includegraphics[width=1\linewidth]{Figures-2025/cuda-vs-rusticl-truncated.pdf}
+       \includegraphics[width=1\linewidth]{cuda-vs-rusticl-truncated.pdf}
       \caption{\myhl{chipStar via rusticl/zink stack, speedup over CUDA SDK excluding 36 benchmarks where the performance difference was negligible}}
       \label{fig:rtx3060-cudasdk-vs-rusticl}
 \end{figure*}
@@ -644,7 +644,7 @@ Given the current state of rusticl, there is not much value in doing an extensiv
 
 \begin{figure*}
       \centering
-      \includegraphics[width=1\linewidth]{Figures-2025/rocm-vs-chipstar.pdf}
+      \includegraphics[width=1\linewidth]{rocm-vs-chipstar.pdf}
       \caption{\myhl{chipStar  via rusticl/radeonsi stack speedup over ROCm. Running on AMD Radeon Pro VII.}
       }
       \label{fig:radeonprovii_rocm_vs_rusticl}
@@ -659,7 +659,7 @@ The GPU also has a native workgroup size of only 32 (subgroup size 16), while mo
 
 \begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{Figures-2025/riscv.pdf}
+    \includegraphics[width=1\linewidth]{riscv.pdf}
           \caption{\myhl{chipStar on PowerVR GPU, speedup over RISC-V CPU. }}
     \label{fig:intel-visionfive2-gpu-cpu}
 \end{figure*}
@@ -675,7 +675,7 @@ The GPU also has a native workgroup size of only 32 (subgroup size 16), while mo
 
 \begin{figure*}
       \centering
-      \includegraphics[width=1\linewidth]{Figures-2025/arm.pdf}
+      \includegraphics[width=1\linewidth]{arm.pdf}
       \caption{\myhl{chipStar on ARM Mali GPU speedup over ARM Cortex CPU.}}
       \label{fig:mali-vs-cortex}
 \end{figure*}
