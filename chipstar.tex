@@ -16,14 +16,25 @@
 \usepackage{textcomp}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{draftwatermark}
-\SetWatermarkText{DRAFT}
-\SetWatermarkScale{1}
-\SetWatermarkLightness{0.9}
+\usepackage{soul}
+
+%Removed the DRAFT stamp in the hopes of this being
+%the final submission ;) --Pekka
+%\usepackage{draftwatermark}
+%\SetWatermarkText{DRAFT}
+%\SetWatermarkScale{1}
+%\SetWatermarkLightness{0.9}
 
 % https://tex.stackexchange.com/questions/326897/vertical-alignment-of-a-turned-cell
 \usepackage{rotating}
 \usepackage{array,makecell,multirow}
+
+\newboolean{showhighlights}
+\setboolean{showhighlights}{false}
+\ifthenelse{\boolean{showhighlights}}
+{ \newcommand{\myhl}[1]{\hl{#1}} }
+{ \newcommand{\myhl}[1]{#1} }
+
 
 \usepackage{ifthen}
 \newboolean{showcomments}
@@ -36,6 +47,23 @@
 { \newcommand{\mynote}[3]{}
   \newcommand{\newtext}[1]{#1}}
 
+\usepackage[acronym]{glossaries}
+\makeglossaries
+
+\newacronym{ir}{\myhl{IR}}{\myhl{Intermediate Representation}}
+\newacronym{jit}{\myhl{JIT}}{\myhl{just-in-time}}
+\newacronym{isa}{\myhl{ISA}}{\myhl{Instruction Set Architecture}}
+\newacronym{hsa}{\myhl{HSA}}{\myhl{Heterogeneous System Architecture}}
+\newacronym{svm}{\myhl{SVM}}{\myhl{Shared Virtual Memory}}
+\newacronym{cg}{\myhl{CG}}{\myhl{Coarse-grained buffer}}
+\newacronym{spir}{\myhl{SPIR}}{\myhl{Standard Portable Intermediate Representation}}
+\newacronym{spirv}{\myhl{SPIR-V}}{\myhl{new version of SPIR}}
+\newacronym{hsail}{\myhl{HSAIL}}{\myhl{Heterogeneous system architecture intermediate language}}
+\newacronym{ssa}{\myhl{SSA}}{\myhl{Static Single Assignment}}
+\newacronym{dpc}{\myhl{DPC++}}{\myhl{Data Parallel C++}}
+\newacronym{usm}{\myhl{USM}}{\myhl{Unified Shared Memory}}
+
+
 % Please use a named note with this macro to comment the text:
 \newcommand{\pj}[1]{ \mynote{PJ}{#1}{blue} }
 \newcommand{\bv}[1]{ \mynote{BV}{#1}{green} }
@@ -44,7 +72,6 @@
 \newcommand{\pv}[1]{ \mynote{PV}{#1}{yellow} }
 \newcommand{\ba}[1]{ \mynote{BA}{#1}{brown} }
 \newcommand{\kh}[1]{ \mynote{KH}{#1}{red} }
-\newcommand{\hl}[1]{ \mynote{HL}{#1}{orange} }
 
 
 \newcommand{\hiplz}{\texttt{HIPLZ}\xspace}
@@ -77,9 +104,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \author{
 {Paulius Velesko}\affilnum{1},
-{Pekka Jääskeläinen}\affilnum{3,4},
-{Henry Linjamäki}\affilnum{3},
-{Michal Babej}\affilnum{3},
+{Pekka Jääskeläinen}\affilnum{4},
+{Henry Linjamäki}\affilnum{4},
+{Michal Babej}\affilnum{4},
 {Peng Tu}\affilnum{3},
 {Sarbojit Sarkar}\affilnum{3},
 {Ben Ashbaugh}\affilnum{3},
@@ -139,12 +166,12 @@ In order to enable an easy automated transition path from CUDA applications, HIP
 An open source HIP/CUDA software platform solely based on open standards with a sincere aim for cross-vendor portability is still lacking.
 
 With the \chipstar software stack described in this article we aim to alleviate the CUDA/HIP application
-portability problem. In contrast to previous solutions that either require source-to-source conversion from CUDA programs~\cite{SYCLomatic}, that can lead to costly multiple codebase maintenance, or aim for binary-level compatibility of existing CUDA/HIP programs~\cite{ZLUDA} that rely on questionable reverse engineering of proprietary binary interfaces -- a brittle longer-term strategy -- \chipstar chooses a middle-ground approach which enables source-level compatibility of HIP/CUDA programs by compiling them to a runtime portable ``fat binary'' that utilizes solely open standards and can execute on any platform supporting the required standard features without recompilation.
+portability problem. In contrast to previous solutions that either require source-to-source conversion from CUDA programs~\cite{SYCLomatic}, that can lead to costly multiple codebase maintenance, or aim for binary-level compatibility of existing CUDA/HIP programs~\cite{ZLUDA} that rely on questionable reverse engineering of proprietary binary interfaces -- a brittle longer-term strategy -- \chipstar chooses a middle-ground approach which enables source-level compatibility of HIP/CUDA programs by compiling them to a runtime portable ``fat binary'' (a single executable that contains multiple code objects, each compiled for a different architecture)  that utilizes solely open standards and can execute on any platform supporting the required standard features without recompilation.
 
 With this article and the associated open source code base we make the following contributions:
 
 \begin{enumerate}
-  \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and SPIR-V cross-vendor open standards.
+  \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and \acrshort{spirv} cross-vendor open standards.
   \item We evaluated \chipstar performance in comparison to running the CUDA applications directly using the NVIDIA SDK or converting the applications to a popular open-standard-based CUDA alternative SYCL.
   %~\cite{SYCL}
   \item We demonstrate a case study for the usability of OpenCL as a portability layer to implement other languages/APIs on top. Portability is shown by providing performance numbers on a RISC-V CPU \& PowerVR GPU,  ARM CPU and GPU, as well as on discrete GPUs from NVIDIA, AMD, and Intel. 
@@ -156,11 +183,11 @@ Section~\ref{section:applications} presents the GAMESS-GPU-HF porting case study
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Heterogeneous Platform Hardware Abstraction Layers}
+\section{\texorpdfstring{\myhl{Rationale for the Chosen Standard APIs}}a}
 \label{section:portabilityAPIs}
 
-As a technical background, we provide our considerations for the ``hardware abstraction layer'' API options forming the platform portability layer for \chipstar. The discussion is split into 1) runtime APIs used to control the execution from the host side and 2) device program representations providing an abstraction for the kernel side programs in a portable manner. Due to the abundance of potential target devices available for acceleration, we consider it important to be able to embed the device programs in an open standard-based intermediate representation (IR) and to use JIT compilation for lowering the program to the target ISA of the accelerator at deployment or launch time. This enables future-proof ``fat binaries'' which can be supported on new platforms by implementing the specification of the IR. Another alternative would be to provide only source-level
+%As a technical background, we provide our considerations for the ``hardware abstraction layer'' API options forming the platform portability layer for \chipstar.
+\myhl{As a technical background, we review the various options available for the portable runtime API and the target-independent device program representation in }\chipstar \myhl{and provide a rationale for our choice}. The discussion is split into 1) runtime APIs used to control the execution from the host side and 2) device program representations providing an abstraction for the kernel side programs in a portable manner. Due to the abundance of potential target devices available for acceleration, we consider it important to be able to embed the device programs in an open standard-based \gls{ir} and to use \gls{jit} compilation for lowering the program to the target \gls{isa} of the accelerator at deployment or launch time. This enables future-proof ``fat binaries'' which can be supported on new platforms by implementing the specification of the \gls{ir}. Another alternative would be to provide only source-level
 compatibility where the application needs to be recompiled for each host and a device pair of interest, hindering binary distribution.
 
 \subsection{Runtime APIs}
@@ -194,30 +221,30 @@ define a device-side program representation, making future-proof cross-vendor po
 a high-level ``application-programmer-facing'' API similarly to SYCL,
 thus offers constructs and overheads for programmer-productivity which are unneccessary for a portability layer.
 
-Heterogeneous System Architecture (HSA) is an open heterogeneous platform
+\gls{hsa} is an open heterogeneous platform
 specification that also defines a runtime API~\cite{HSA,HSART}.
-A key differentiating feature of HSA is that it standardizes on shared virtual memory,
+A key differentiating feature of \gls{hsa} is that it standardizes on shared virtual memory,
 making system-wide virtual memory addressing a required feature from
 implementations. In hindsight this requirement was too much
 too early, as system-wide virtual memory support is only recently appearing
 in hardware and still usually requires explicit allocation or mapping
 calls from the programmer.
-For this work, HSA could have been a valid choice for
+For this work, \gls{hsa} could have been a valid choice for
 a lightweight portability layer, but activity on the specification has ceased,
 with mainly AMD using only selected parts of it in their software stack (the ROCr runtime component).
 
 Another option to consider would be Vulkan~\cite{Vulkan} since it also
 provides a compute pipeline stage which allows specifying general purpose compute
 kernels. However, the
-feature set of the compute kernels lacks some of OpenCL's features such as SVM which
+feature set of the compute kernels lacks some of OpenCL's features such as \gls{svm} which
 would require further standard extensions.
 It might be that in the future
 the feature gap gets narrower and it would become a viable option. Meanwhile, layering OpenCL on top of Vulkan is an interesting option pursued by multiple open source projects to cover the devices which previously only had Vulkan driver support.
 
-Level Zero~\cite{l0} is an API at a similar level of abstraction as HSA and OpenCL.
+Level Zero~\cite{l0} is an API at a similar level of abstraction as \gls{hsa} and OpenCL.
 However, it's currently only supported on Intel's devices, thus is not suitable for future-proof cross-vendor fat binaries.
 
-Interestingly, OpenCL was originally created to provide an open cross-vendor alternative to the proprietary CUDA GPGPU (General Purpose GPU) programming model. It has received wide support from hardware vendors, but some application developers are known to dislike it because it can be considered too low level as an application-facing API and unproductive with the driver and feature support lagging behind the proprietary alternatives.
+Interestingly, OpenCL was originally created to provide an open cross-vendor alternative to the proprietary CUDA GPGPU (General Purpose GPU) programming model. \myhl{After its introduction in 2009} it has received wide support from hardware vendors, but some application developers are known to dislike it because it can be considered too low level as an application-facing API and unproductive with the driver and feature support lagging behind the proprietary alternatives.
 However, as demonstrated in this paper, OpenCL can provide an excellent portability layer for implementing other higher-level programming models and APIs on top. This portability is due to multiple vendor's official support for the minimum feature set of OpenCL version 3.0 and to multiple long-maintained open source implementations. For these reasons, we have chosen OpenCL as the runtime through which to access the GPU.
 
 \subsection{Device Program Representations}
@@ -228,21 +255,21 @@ Thus, the choice of the format in which the device programs (kernels) are stored
 Furthermore, the representation should be ``future-proof'' in a sense that the produced fat binaries could be made to run on entirely new platforms by only referring to the API specification.
 At the time of this writing, there still seems to be no clear winning program representation in this regard. Various portable implementations of application-facing APIs resort to very fat binaries which store copies of the device program in multiple (virtual) instruction-set architectures to cover the various targets and offloading runtimes it might encounter at execution time. This is the case with~\cite{10.1145/3559009.3569687} and originally in AdaptiveCpp~\cite{10.1145/3529538.3530005}.
 
-Recently AdaptiveCpp started storing kernels in the LLVM~\cite{LLVM} compiler Intermediate Representation (IR) instead of storing multiple different binaries depending on the target. In this scheme, LLVM IR is lowered to various target-dependent formats at runtime at the point when the target is known~\cite{OpenSYCLfatbin}.
-This approach has benefits in comparison to storing abundance of device binaries in the another alternative, and works in theory, but it is also known that LLVM IR is not supposed to be a portable program representation as it can embed target-specific intrinsics, has target specific data layout and endianness among other challenges.
-LLVM IR is not guaranteed to be stable across LLVM versions, which means that the fat binaries should have access to an LLVM library of version the IR was generated with, which at worst requires to embed the LLVM library along and the required backends to the fat binary, forming an unnecessary dependency.
-The problem of LLVM IR not being target-independent nor stable across LLVM versions was attempted to be addressed by earlier Standard Portable Intermediate Representation (SPIR) versions 1.2 and 2.0~\cite{SPIR2}: These first SPIR versions were designed to support OpenCL C language kernels and were based on defined versions of LLVM IR, which proved to be difficult to maintain long term.
-LLVM-based SPIR versions were later obsoleted in favor of the SPIR-V~\cite{SPIRV} format.
-The goal for SPIR-V is to provide a robust cross-vendor specified intermediate language which is not affected by LLVM upstream changes and that shares specification effort with the Vulkan community.
+Recently AdaptiveCpp started storing kernels in the LLVM~\cite{LLVM} compiler \gls{ir} instead of storing multiple different binaries depending on the target. In this scheme, LLVM \gls{ir} is lowered to various target-dependent formats at runtime at the point when the target is known~\cite{OpenSYCLfatbin}.
+This approach has benefits in comparison to storing abundance of device binaries in the another alternative, and works in theory, but it is also known that LLVM \gls{ir} is not supposed to be a portable program representation as it can embed target-specific intrinsics, has target specific data layout and endianness among other challenges.
+LLVM \gls{ir} is not guaranteed to be stable across LLVM versions, which means that the fat binaries should have access to an LLVM library of version the \gls{ir} was generated with, which at worst requires to embed the LLVM library along and the required backends to the fat binary, forming an unnecessary dependency.
+The problem of LLVM \gls{ir} not being target-independent nor stable across LLVM versions was attempted to be addressed by earlier \gls{spir} versions 1.2 and 2.0~\cite{SPIR2}: These first \gls{spir} versions were designed to support OpenCL C language kernels and were based on defined versions of LLVM \gls{ir}, which proved to be difficult to maintain long term.
+LLVM-based \gls{spir} versions were later obsoleted in favor of the \gls{spirv}~\cite{SPIRV} format.
+The goal for \gls{spirv} is to provide a robust cross-vendor specified intermediate language which is not affected by LLVM upstream changes and that shares specification effort with the Vulkan community.
 
-HSA specification defines an intermediate language called HSAIL and a binary representation called BRIG~\cite{HSAIL}. A key technical difference between HSAIL and SPIR-V format, is that HSAIL has 
-a fixed number of registers and an address space for spills unlike SPIR-V, which has infinite virtual registers due to being based on the Static Single Assignment (SSA)~\cite{SSA} representation.
-HSA made a choice to not define a higher-level programming language (like OpenCL C) for the device programs, but only standardized a low level IR.
-As with the HSA runtime specification, however, the activity on the HSAIL specification has stalled.
-There was also a GCC-based frontend for consuming BRIGs in a target-portable fashion, but after activity on HSA quieted, the ``BRIG frontend'' was removed from the upstream GCC source code repository in a May 2021 commit.
+\gls{hsa} specification defines an intermediate language called \gls{hsail} and a binary representation called BRIG~\cite{HSAIL}. A key technical difference between \gls{hsail} and \gls{spirv} format, is that \gls{hsail} has 
+a fixed number of registers and an address space for spills unlike \gls{spirv}, which has infinite virtual registers due to being based on the \gls{ssa}~\cite{SSA} representation.
+\gls{hsa} made a choice to not define a higher-level programming language (like OpenCL C) for the device programs, but only standardized a low level \gls{ir}.
+As with the \gls{hsa} runtime specification, however, the activity on the \gls{hsail} specification has stalled.
+There was also a GCC-based frontend for consuming BRIGs in a target-portable fashion, but after activity on \gls{hsa} quieted, the ``BRIG frontend'' was removed from the upstream GCC source code repository in a May 2021 commit.
 
-In conclusion, while official SPIR-V OpenCL environment support from processor vendors is extensive as of this writing, it seems to be still the best option for a cross-platform representation given that it is an open standard defined democratically by multiple hardware vendors and is relied upon by OpenCL, Vulkan, and SYCL implementations among other use cases such as Direct-X adopting it.
-In addition, thanks to open source tooling support available and useful SPIR-V producers such as \chipstar and Intel oneAPI DPC++ appearing, the list of supported targets is expected to grow in the future. Therefore, we considered SPIR-V and OpenCL to be future-proof open standards on which to base the implementation.
+In conclusion, while official \gls{spirv} OpenCL environment support from processor vendors is extensive as of this writing, it seems to be still the best option for a cross-platform representation given that it is an open standard defined democratically by multiple hardware vendors and is relied upon by OpenCL, Vulkan, and SYCL implementations among other use cases such as Direct-X adopting it.
+In addition, thanks to open source tooling support available and useful \gls{spirv} producers such as \chipstar and Intel oneAPI \gls{dpc} appearing, the list of supported targets is expected to grow in the future. Therefore, we considered \gls{spirv} and OpenCL to be future-proof open standards on which to base the implementation.
 
 \section{Implementing HIP/CUDA on OpenCL Runtime API}
 \label{section:implementation}
@@ -250,7 +277,7 @@ In addition, thanks to open source tooling support available and useful SPIR-V p
 The primary goal for \chipstar is to support the subset of CUDA features
 as defined by HIP and expand the feature set beyond it whenever feasible
 while relying on the chosen open standard APIs as much as possible.
-In this section, we discuss how the OpenCL/SPIR-V specifications can be matched with
+In this section, we discuss how the OpenCL/\gls{spirv} specifications can be matched with
 the commonly used features of CUDA/HIP and identify the most impactful gaps
 that we believe should be covered in the future.
 
@@ -271,55 +298,56 @@ address space concept introduced in OpenCL v2.0, which was utilized to bridge
 this gap.
 
 The simplest interface in CUDA's host-side device memory management is \func{cudaMalloc()}.
-It returns a raw pointer to the targeted device's global memory, instead of an opaque handle
-as is the case with OpenCL's basic buffer management functionality. This presents a small
-but significant difference from the OpenCL v1.x specification for device memory management;
-OpenCL v1.x only provides a buffer management API (\func{clCreateBuffer()} and others) which
-returns opaque \type{cl\_mem} handles.
+\myhl{It returns a raw pointer to the targeted device's global memory, instead of an opaque buffer handle.}
+% as is the case with OpenCL's basic buffer management functionality. This presents a small
+%but significant difference from the OpenCL v1.x specification for device memory management;
+%OpenCL v1.x only provides a buffer management API (\func{clCreateBuffer()} and others) which returns opaque \type{cl\_mem} handles.
 %
-The opaque buffer handles cannot be used to implement CUDA device memory allocation
-because they do not provide access to the underlying raw device address or passing addresses in other data
-structures, which is allowed with the CUDA device pointers. In order to implement these
-capabilities, we utilized the Shared Virtual Memory (SVM) API that first appeared in
-the OpenCL v2.0.
-The raw pointers vs buffers difference along with the
-implicit address space inference required us to lift the minimum OpenCL
-version to v2.0 to support even the most basic CUDA programs.
+%The opaque buffer handles cannot be used to implement CUDA device memory allocation
+%because they do not provide access to the underlying raw device address or passing addresses in other data
+%structures, which is allowed with the CUDA device pointers. 
+\myhl{In order to implement these
+capabilities, we utilized the }\gls{svm} \myhl{API that first appeared in the OpenCL v2.0.}
+%The raw pointers vs buffers difference along with the
+%implicit address space inference required us to lift the minimum OpenCL
+%version to v2.0 to support even the most basic CUDA programs.
 
-The SVM allocation API returns a raw pointer to a shared
-virtual address space region. The ``Coarse Grained buffer SVM'' (CG SVM) variant can be used to
-implement the basic device memory allocation. Mapping device memory allocation to CG SVM
-has a drawback that the device driver must support some of the unneeded SVM features such as
+The \gls{svm} allocation API returns a raw pointer to a shared
+virtual address space region. The ``\gls{cg} \gls{svm}'' variant can be used to
+implement the basic device memory allocation. Mapping device memory allocation to \gls{cg} \gls{svm}
+has a drawback that the device driver must support some of the unneeded \gls{svm} features such as
 mapping the allocated regions to the virtual address space although just returning physical
 device memory pointers would suffice. This means that the \chipstar implementation is actually
 implementing CUDA's Unified Memory model by default. To alleviate the potential performance
-impact of this, \chipstar can also use the Intel Unified Shared Memory (USM)
-extension (\textit{cl\_intel\_unified\_shared\_memory} \cite{intel-usm} ), if supported by the runtime. USM enables allocating strictly
-device-only allocations, but still returns virtual pointers, which can be problematic for some implementations. In order to provide an allocation API matching the basic \func{cudaMalloc()}'s needs, we introduced a new extension (\textit{cl\_ext\_buffer\_device\_address}  \cite{intel-buffer}) that enables querying the raw device pointer of a cl\_mem allocation without needing to map the buffer to the same address range in the host's virtual memory. \chipstar can use any of these alternative memory management APIs, if advertised by the targeted OpenCL device.
+impact of this, \chipstar can also use the Intel \gls{usm}
+extension (\textit{cl\_intel\_unified\_shared\_memory}~\cite{intel-usm}), if supported by the runtime. \gls{usm} enables allocating strictly
+device-only allocations, but still returns virtual pointers, which can be problematic for some implementations. 
+
+\myhl{In order to provide a minimal allocation API} matching the basic \func{cudaMalloc()}'s needs \myhl{without requiring a }\gls{svm}\myhl{-capable OpenCL driver}, we introduced a new extension (\textit{cl\_ext\_buffer\_device\_address}\cite{intel-buffer}) that enables querying the raw device pointer of a cl\_mem allocation without needing to map the buffer to the same address range in the host's virtual memory. \chipstar can use any of these alternative memory management APIs, if advertised by the targeted OpenCL device.
 
 CUDA provides an API to \textit{pin} memory so it's kept resident in the host memory and
 optionally made accessible by devices from kernel code and is not swapped out to disk. 
 The primary APIs to this functionality are
 \func{cudaHostAlloc()} and \func{cudaHostRegister()}. The former allocates pinned
 memory directly and the latter pins a previous host allocation. \func{cudaHostAlloc()}
-is simple to implement with coarse grained SVM since by the coincidence of using
+is simple to implement with coarse grained \gls{svm} since by the coincidence of using
 a shared virtual memory allocation, the buffers are by default accessible in both the host and
 the device using the same pointer. However, the allocation might not be resident for the
 duration of the execution, for example, if a CPU device is allowed to swap out such
 allocations. However, that aspect can only be observed by the programmer as a performance difference.
 
-\func{cudaHostRegister()} is a bit more challenging to implement on top of CG SVM since it
+\func{cudaHostRegister()} is a bit more challenging to implement on top of \gls{cg} \gls{svm} since it
 allows registering a host address range to be a pinned region accessible both from the host and
 the device \textit{after}
 the host memory has been allocated. Since the allocation might not have
 been originally allocated with the OpenCL SVM allocation API, but with a system memory allocator or even
 from the stack, to implement correct functionality in this case, \chipstar creates
 a shadow buffer using \func{clSVMAlloc()} and synchronizes it with the host region at
-kernel start and end points. OpenCL 2.1 added a new \func{clEnqueueSVMMigrateMem()} API that enables fine grained specification of where regions of SVM are migrated, but it is not useful for this case since the source of \func{cudaHostRegister()} can be any host memory area whereas the API handles only SVM allocations.
+kernel start and end points. OpenCL 2.1 added a new \func{clEnqueueSVMMigrateMem()} API that enables fine grained specification of where regions of \gls{svm} are migrated, but it is not useful for this case since the source of \func{cudaHostRegister()} can be any host memory area whereas the API handles only \gls{svm} allocations.
 
 The NVIDIA architectures post-compute capability 6 support on-demand page migration which
 relies on the hardware memory management unit (page fault-based buffer migrations) for coherence
-of the Unified Memory allocations. This frees the programmer from the need to perform explicit memory allocation and synchronization calls. This functionality maps to the Fine-Grained System SVM of OpenCL, but since hardware and driver support for fine-grain SVM is very rare at the time of this writing, on-demand page migration is not yet implemented by \chipstar.
+of the Unified Memory allocations. This frees the programmer from the need to perform explicit memory allocation and synchronization calls. This functionality maps to the Fine-Grained System \gls{svm} of OpenCL, but since hardware and driver support for fine-grain \gls{svm} is very rare at the time of this writing, on-demand page migration is not yet implemented by \chipstar.
 
 \subsection{Tasks and Events}
 
@@ -332,7 +360,7 @@ execution~\cite{OpenCL}.
 
 \subsection{Textures}
 
-\chipstar supports only a subset of texture objects due to a limitation in OpenCL images. The notable differences between HIP/CUDA and OpenCL are that the texture objects are pointers to opaque C/C++ structures whereas in OpenCL/SPIR-V there is a special type per image dimensionality and that the texture objects can be loaded indirectly whereas OpenCL images can be only passed to kernels as kernel arguments. Therefore, some constructs such as the following cannot be expressed in SPIR-V:
+\chipstar supports only a subset of texture objects due to a limitation in OpenCL images. The notable differences between HIP/CUDA and OpenCL are that the texture objects are pointers to opaque C/C++ structures whereas in OpenCL/\gls{spirv} there is a special type per image dimensionality and that the texture objects can be loaded indirectly whereas OpenCL images can be only passed to kernels as kernel arguments. Therefore, some constructs such as the following cannot be expressed in \gls{spirv}:
 
 \begin{verbatim}
   hipTextureObject_t Tx = ...;
@@ -347,16 +375,16 @@ An LLVM pass is responsible for lowering texture object API based texture functi
 \section{Compilation Aspects}
 \label{section:compilation}
 
-This section discusses the compilation flow used by \chipstar. We introduce the overall compilation flow, the device library implementation and summarize our findings on the key needs to extend the OpenCL/SPIR-V standards to bridge key feature gaps between the specifications.
+This section discusses the compilation flow used by \chipstar. We introduce the overall compilation flow, the device library implementation and summarize our findings on the key needs to extend the OpenCL/\gls{spirv} standards to bridge key feature gaps between the specifications.
 
 \subsection{The Compilation Flow}
 
-The offline compilation flow of \chipstar is built on the LLVM Project's~\cite{LLVM} Clang~\cite{Clang} frontend which provides the frontend language handling and splitting of the single source input to the device and host parts. The overall compilation process is shown in Fig.~\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce SPIR-V binaries as an option to PTX or AMDIL for the device program. The LLVM \func{opt} tool is used to invoke special LLVM passes provided by \chipstar for lowering HIP features to the OpenCL-SPIR-V environment. The SPIR-V translation is performed using Khronos' LLVM-SPIRV-Translator tool~\cite{llvm-spirv}.
+The offline compilation flow of \chipstar is built on the LLVM Project's~\cite{LLVM} Clang~\cite{Clang} frontend which provides the frontend language handling and splitting of the single source input to the device and host parts. The overall compilation process is shown in Fig.~\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce \gls{spirv} binaries as an option to PTX or AMDIL for the device program. The LLVM \func{opt} tool is used to invoke special LLVM passes provided by \chipstar for lowering HIP features to the OpenCL-\gls{spirv} environment. The \gls{spirv} translation is performed using Khronos' LLVM-SPIRV-Translator tool~\cite{llvm-spirv}.
 
 \begin{figure*}
     \centering
     \includegraphics[scale=1]{chipstar-compilation-v2.pdf}
-    \caption{The construction of a HIP fat binary. Device code is compiled into LLVM IR, chipStar applies a series of LLVM passes at optimization time. The resulting IR is embedded into the binary and linked against the device library. }
+    \caption{The construction of a HIP fat binary. Device code is compiled into LLVM \gls{ir}, chipStar applies a series of LLVM passes at optimization time. The resulting \gls{ir} is embedded into the binary and linked against the device library. }
     \label{fig:compilation}
 \end{figure*}
 
@@ -366,25 +394,27 @@ data synchronization overheads in the common case where the kernels only access 
 
 \subsection{Lazy Just-in-Time Compilation}
 
-Fig.~\ref{fig:online-compilation} shows the online compilation flow from SPIR-V to device code in the \chipstar runtime.
-When a kernel launch is requested, the kernel function stub pointer is used to look up the associated SPIR-V module which, in turn, is just-in-time (JIT) compiled to machine code.
-To enhance runtime portability, the built-in library of the on-line device provides variations in built-in HIP functions for different device capabilities that are linked to the user’s device programs at runtime. For example, for HIP floating-point atomics the runtime chooses between an implementation that maps them to corresponding native functions via a SPIR-V extension or emulates them via atomic exchange operations.
+Fig.~\ref{fig:online-compilation} shows the online compilation flow from \gls{spirv} to device code in the \chipstar runtime.
+When a kernel launch is requested, the kernel function stub pointer is used to look up the associated \gls{spirv} module which, in turn, is \gls{jit} compiled to machine code.
+To enhance runtime portability, the built-in library of the on-line device provides variations in built-in HIP functions for different device capabilities that are linked to the user’s device programs at runtime. For example, for HIP floating-point atomics the runtime chooses between an implementation that maps them to corresponding native functions via a \gls{spirv} extension or emulates them via atomic exchange operations.
 
 \begin{figure*}
     \centering
     \includegraphics[scale=0.9]{chipstar-rt-compile-n-link.pdf}
-    \caption{The just-in-time compilation flow. Once the program is executed, prior to calling main, a series of internal HIP calls are executed. These calls parse the fat binary and register the embedded SPIR-V files as modules. In lazy JIT mode, these modules are not compiled into kernels until their launch is requested.}
+    \caption{The just-in-time compilation flow. Once the program is executed, prior to calling main, a series of internal HIP calls are executed. These calls parse the fat binary and register the embedded \gls{spirv} files as modules. In lazy \gls{jit} mode, these modules are not compiled into kernels until their launch is requested.}
     \label{fig:online-compilation}        
 \end{figure*}
 
-Initially, the kernel compilation was implemented in an eager manner in \chipstar: all of the kernels were compiled prior to entering main().  If the SPIR-V has a lot of kernels bundled in, but only a small subset of them are invoked by each application run, the compilation time could grow very high. For example, a neural network framework included all neural network operators in a single SPIR-V library, requiring its compilation at each network launch although only a subset of the operators were actually utilized.
+%Initially, the kernel compilation was implemented in an eager manner in \chipstar: all of the kernels were compiled prior to entering main().  If the SPIR-V has a lot of kernels bundled in, but only a small subset of them are invoked by each application run, the compilation time could grow very high. For example, a neural network framework included all neural network operators in a single SPIR-V library, requiring its compilation at each network launch although only a subset of the operators were actually utilized.
 
-To address this issue, \chipstar implements a lazy JIT compilation strategy. With lazy JIT enabled
-modules are not compiled immediately upon creation, but rather compilation is deferred until the first kernel call that requires the module. When compilation occurs, the SPIR-V binary is converted to the target format, build flags and options are set up, and backend-specific compilation methods (such as \func{clCreateProgramWithIL} for OpenCL) are used. 
+\chipstar implements a lazy \gls{jit} compilation strategy \myhl{to avoid compiling all kernels of large }\gls{spirv}\myhl{ libraries such as those in neural network libraries, unless called from the host program.} 
+%With lazy \gls{jit} enabled
+%modules are not compiled immediately upon creation, but rather compilation is deferred until the first kernel call that requires the module. 
+When compilation occurs, the \gls{spirv} binary is converted to the target format, build flags and options are set up, and backend-specific compilation methods (such as \func{clCreateProgramWithIL} for OpenCL) are used. 
 Once compiled, modules are cached for future use. This approach significantly reduces startup time for applications with many kernels, as only the necessary kernels are compiled. 
 
 The implementation includes performance monitoring features, tracking compilation time and logging whether modules are loaded from cache or compiled fresh.
-The lazy JIT system is designed to be backend-agnostic, allowing different backends (Level0, OpenCL, etc.) to implement their own specific compilation strategies while maintaining consistent lazy compilation behavior. This flexibility enhances \chipstar's portability across various platforms and backends.
+The lazy \gls{jit} system is designed to be backend-agnostic, allowing different backends (Level0, OpenCL, etc.) to implement their own specific compilation strategies while maintaining consistent lazy compilation behavior. This flexibility enhances \chipstar's portability across various platforms and backends.
 
 \subsection{Device Library}
 The \textit{chipstar} device-side library implements the HIP math API, by using a combination of OpenCL C math built-ins, LLVM built-ins, OCML (part of ROCm-Device-Libs), and custom implementations.
@@ -430,7 +460,7 @@ native\_log& 0.36                    & 0.36                   & 0.46            
 
 Previous research \cite{ulp-comparisons-paper} shows significant disparities in the precision of GPU math functions, with CUDA consistently achieving the highest accuracy, followed by HIP, LLVM, and OpenCL (estimated based on relaxed math). CUDA’s functions maintain ULP errors close to 1, while HIP and LLVM exhibit progressively higher errors, sometimes exceeding 3-5 ULP. OpenCL’s relaxed math and native built-in functions lack strict accuracy guarantees, making it challenging to replicate CUDA’s precision without significant adjustments or corrections.
 
-The ``correctness first'' principle mandates the use of arithmetics that have  guaranteed accuracy, which means to not receive any performance benefits of simplified implementations. This approach is not taken by DPC++, for example, as it defaults to a more relaxed floating point precision model (-fp-model=fast).
+The ``correctness first'' principle mandates the use of arithmetics that have  guaranteed accuracy, which means to not receive any performance benefits of simplified implementations. This approach is not taken by \gls{dpc}, for example, as it defaults to a more relaxed floating point precision model (-fp-model=fast).
 Achieving ULP requirements specified in the CUDA API would require emulating them in software . Performance impact would likely be too drastic to make \chipstar usable for high performance workloads.
 Since we cannot make any guarantees about precision, we have chosen to map regular and intrinsic functions to the same OpenCL default accuracy function implementations.
 
@@ -438,7 +468,7 @@ We plan to optimize this aspect in the future via a new standard extension with 
 
 \subsection{OpenCL Extensions}
 
-The \chipstar compilation flow is built such that different advanced OpenCL features and extensions are not required from the target platform's driver or device unless the compiled input application specifically needs them. Although the minimal OpenCL 3.0 feature set plus coarse-grained SVM and SPIR-V consumption support covers a significant part of the most commonly used CUDA and HIP features, some functionalities require or can be improved with extensions to the OpenCL or SPIR-V specifications.
+The \chipstar compilation flow is built such that different advanced OpenCL features and extensions are not required from the target platform's driver or device unless the compiled input application specifically needs them. Although the minimal OpenCL 3.0 feature set plus coarse-grained \gls{svm} and \gls{spirv} consumption support covers a significant part of the most commonly used CUDA and HIP features, some functionalities require or can be improved with extensions to the OpenCL or \gls{spirv} specifications.
 
 \begin{table*}[ht]
     \centering
@@ -448,7 +478,7 @@ The \chipstar compilation flow is built such that different advanced OpenCL feat
     \hline
 cl\_intel\_unified\_shared\_memory & Used for optimized \func{cudaMalloc()} when available. \\
    \hline
-cl\_ext\_buffer\_device\_address & Used for optimized \func{cudaMalloc()} when USM nor SVM are available. \\
+cl\_ext\_buffer\_device\_address & Used for optimized \func{cudaMalloc()} when \gls{usm} nor \gls{svm} are available. \\
    \hline
 cl\_intel\_required\_subgroup\_size & Used to fix the warp-size. \\
     \hline
@@ -497,15 +527,18 @@ cl\_ext\_subgroup\_id\_mapping & For forcing the desired thread id mapping when 
 \end{table*}
 
 
+
+
 In Table~\ref{table:extensions} we summarize the standard extensions \chipstar can already utilize and which CUDA/HIP feature triggers their need. Table~\ref{table:proposedExtensions} describes further work-in-progress extension proposals we have identified to be useful for CUDA/HIP portability. These extensions are in different stages in the Khronos Group standardization process, which is noted in the table.\footnote{Note to reviewers: We will update the status for the final article version.}
 
 Most of the extensions are relatively straightforward and the brief description in the table should suffice to grasp their purpose. However, the handling of warp-level primitives calls for a bit more thorough explanation:
 One of the execution model differences between CUDA and OpenCL is that CUDA presents a finer grained fixed size grouping of the threads (OpenCL work-items) than the blocks (work-groups) called a \textit{warp}. In earlier CUDA versions, the threads in a warp could be assumed to execute in lock-step, implying that the enabled threads in the same warp would execute the same instruction. This implied that in some cases explicit synchronization could be omitted: In case of a usual read-modify-update case, the programmer could trust that the warp's threads all execute the read part before any of them proceeds to the update part, enabling in-place-updates without explicit synchronization. In later versions of the CUDA specification, the use of lock-step behavior in program logic was deprecated, but the feature has to be supported for legacy applications~\cite{cuda-lockstep}.
 
 In addition to older CUDA programs potentially relying on the lock-step semantics to omit explicit synchronization, the fixed size warps (32 threads for NVIDIA and usually 64 threads in AMD devices) affect the execution semantics when executing warp-level functions that rely on the warp grouping and the mapping of the threads to the lanes of the warp.  Such primitives include the warp shuffles, which read data from a specific lane within the warp, and the explicit warp synchronization primitives.
-%
-%\pj{There could be a figure here with possible subgroup id mappings and how warps always map the threads in linear order.}
 The OpenCL specification, on the other hand, doesn't have a warp concept, but the work-items are free to make progress in any order and grouping. The specification, however, has a feature extension called ``subgroups'' that is used to implement the warp semantics in \chipstar when the kernel is detected to need it. However, in contrast to warps which have a specified form and content which allows the programmer to utilize them reliably, the basic subgroups of OpenCL are ``implementation-oriented''; they enable grouped execution in a manner that is simplest or most efficient for the driver and the hardware at hand. The sizes of the OpenCL subgroups are not fixed, but must be queried per kernel by the programmer in the basic extension. Also the way work-items are mapped to subgroup lanes so they can be referred to when using cross-lane intrinsics is also implementation-defined. To close the gap between subgroups and warps, an enhanced extension that \textit{forces} the subgroup size of the kernel to the desired size along with the linear id mapping is being proposed.
+
+\subsection{Unsupported HIP/CUDA APIs}
+\myhl{The following APIs have not yet been implemented as feature implementation timelines are driven by application requirements:Cooperative Groups,  Memory Pools, Inter-process Communication, Peer-to-Peer Access, and Occupancy APIs. Implementing some of these APIs might require additional OpenCL extensions. This is left for future work.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -524,101 +557,98 @@ The HeCbench benchmark application selection criteria for each comparison was as
     \item Applications that required hardware or OpenCL driver features that were missing or too limited on the platform were omitted. This mostly concerned the runs on embedded/integrated GPUs with limited memory or lack of double precision floating point support.
 \end{enumerate}
 
-\subsection{OneAPI DPC++ on Intel oneAPI SDK}
+\subsection{OneAPI \gls{dpc} on Intel oneAPI SDK}
 \label{sec:SYCL-comparison}
 
 For this evaluation we chose a subset of benchmarks included in the HeCbench suite and compared the performance of their HIP versions of the benchmarks against the SYCL versions. 
-The SYCL versions were compiled with Intel's DPC++ shipped with the oneAPI v2024.2.2 release. 
+The SYCL versions were compiled with Intel's \gls{dpc} shipped with the oneAPI v2024.2.2 release. 
 
-The following consumer-grade hardware from Intel, Nvida, and AMD was used to perform the  benchmarking: Intel A770 discrete GPU, Intel UHD 770 integrated GPU, Nvidia RTX3060, AMD Vega VII and Intel i9-13900k CPU. 
+The following consumer-grade hardware from Intel, \myhl{Nvidia}, and AMD was used to perform the  benchmarking: Intel A770 discrete GPU, Intel UHD 770 integrated GPU, Nvidia RTX3060, AMD Vega VII and Intel i9-13900k CPU. 
 
-Since both \chipstar and DPC++ can use OpenCL as a backend, the evaluations are performed using the same OpenCL driver on the same GPUs. This  isolates the differences between the tested software stacks to the runtime and the LLVM IR level device code compiler optimizations. 
+Since both \chipstar and \gls{dpc} can use OpenCL as a backend, the evaluations are performed using the same OpenCL driver on the same GPUs. This  isolates the differences between the tested software stacks to the runtime and the LLVM \gls{ir} level device code compiler optimizations. 
 
-\begin{figure}
+\begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{dgpu-SYCL-vs-chipStar-v1.2.1-fast-math-ocl.png}
-    \caption{chipStar-v1.2.1 speedup over SYCL via DPC++ with relaxed math.}
+    \includegraphics[width=1\linewidth]{Figures-2025/chipStar-vs-sycl-speedup-truncated.pdf}
+    \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{with relaxed math, excluding 20 benchmarks where the performance difference was negligible }}
     \label{fig:best-vs-best}
-\end{figure}
+\end{figure*}
 In Fig. \ref{fig:best-vs-best}, 
-we compare the expected fastest results between SYCL/DPC++ and chipStar when floating point relaxations are enabled to the extent the implementations can utilize them. As expected, there are only minor differences in the performance since
- both DPC++ and \chipstar implement their respective runtime by leveraging  OpenCL as the GPU API
-and have a similar compilation flow: kernels are compiled into LLVM IR which is then translated to SPIR-V which, in turn, is then JIT compiled to device code at runtime.  
+we compare the expected fastest results between SYCL/\gls{dpc} and chipStar when floating point relaxations are enabled to the extent the implementations can utilize them. As expected, there are only minor differences in the performance since
+ both \gls{dpc} and \chipstar implement their respective runtime by leveraging  OpenCL as the GPU API
+and have a similar compilation flow: kernels are compiled into LLVM \gls{ir} which is then translated to \gls{spirv} which, in turn, is then \gls{jit} compiled to device code at runtime.  
 
-For the vast majority of benchmarks, the performance difference between DPC++ and \chipstar was negligible, but there are outliers to both directions. DPC++ can currently benefit from FP relaxations more as it defaults to -fp-model=fast \cite{intel-fp-fast} which enables optimizations like floating-point reassociation, fused multiply-add operations, and the omission of certain intermediate rounding steps, as well as the use of less accurate device-side math functions. The HIP/CUDA equivalent is --use\_fast\_math \cite{cuda-fast-math} but \chipstar v.1.2.1 does not yet support this compiler flag.
+For the vast majority of benchmarks, the performance difference between \gls{dpc} and \chipstar was negligible, but there are outliers to both directions. \gls{dpc} can currently benefit from FP relaxations more as it defaults to -fp-model=fast \cite{intel-fp-fast} which enables optimizations like floating-point reassociation, fused multiply-add operations, and the omission of certain intermediate rounding steps, as well as the use of less accurate device-side math functions. The HIP/CUDA equivalent is --use\_fast\_math \cite{cuda-fast-math} but \chipstar v.1.2.1 does not yet support this compiler flag.
 
 We investigated the outliers and identified several reasons for the performance achieved:
 
 \begin{itemize} {
-    \item \textbf{Device library differences.} }There are significant differences in the device libraries: DPC++ uses the Intel Math Functions (IMF) Device Library \cite{imf-website} whereas chipStar relies on a combination of LLVM built-ins, native OpenCL operations, a few custom implementations, and finally ROCm's OCML bitcode  implementations to provide complete coverage. Furthermore, DPC++ defaulting to -fp-model=fast enables the use of \_native intrinsics which are significantly faster (and more accurate) than non-native implementations.
-    \item \textbf{\textbf{Effect of JIT Flags. }} chipStar sees significantly higher performance increases when JIT flag  -cl-fast-relaxed-math is passed to the OpenCL runtime. 
-    \item \textbf{Floating point relaxations}. SYCL on DPC++ defaults to -fp-model=fast which results in more aggressive optimizations by removing IEEE 754 guarantees and assuming no NaN/Inf values, generation of FMAs. In comparison, HIP allows only FMA contractions by default.
+    \item \textbf{Device library differences.} }There are significant differences in the device libraries: \gls{dpc} uses the Intel Math Functions (IMF) Device Library \cite{imf-website} whereas chipStar relies on a combination of LLVM built-ins, native OpenCL operations, a few custom implementations, and finally ROCm's OCML bitcode  implementations to provide complete coverage. Furthermore, \gls{dpc} defaulting to -fp-model=fast enables the use of \_native intrinsics which are significantly faster (and more accurate) than non-native implementations.
+    \item \textbf{Effect of \gls{jit} Flags. } chipStar sees significantly higher performance increases when \gls{jit} flag  -cl-fast-relaxed-math is passed to the OpenCL runtime. 
+    \item \textbf{Floating point relaxations}. \gls{dpc} defaults to -fp-model=fast which results in more aggressive optimizations by removing IEEE 754 guarantees and assuming no NaN/Inf values, generation of FMAs. In comparison, HIP allows only FMA contractions by default.
 
-    \item \textbf{Value assumptions.} IR produced by DPC++ takes advantage of AssumeTrueKHR which is a SPIR-V instruction that tells the compiler to assume a given condition is always true, allowing it to optimize code more aggressively under that assumption. Using this instruction should give it a performance advantage of chipStar. 
-    \item \textbf{Intel-specific decorators.} DPC++ tends to produce IR which often contains Intel-specific operations that are meant to help with optimization when targeting Intel platforms which support the extensions, such as OpAliasDomainDeclINTEL, OpAliasScopeDeclINTEL wheras chipStar IR is more generic.
+    \item \textbf{Value assumptions.} \gls{ir} produced by \gls{dpc} takes advantage of AssumeTrueKHR which is a \gls{spirv} instruction that tells the compiler to assume a given condition is always true, allowing it to optimize code more aggressively under that assumption. Using this instruction should give it a performance advantage \myhl{over} chipStar. 
+    \item \textbf{Intel-specific decorators.} \gls{dpc} tends to produce \gls{ir} which often contains Intel-specific operations that are meant to help with optimization when targeting Intel platforms which support the extensions, such as OpAliasDomainDeclINTEL, OpAliasScopeDeclINTEL whereas chipStar \gls{ir} is more generic.
 
 \end{itemize}
 
-One thing to note is that the following results include only the benchmarks which passed correctness checks and in this regard chipStar ended up successfully running 6 benchmarks fewer compared to SYCL. A lot of these benchmarks have quite tight epsilon bounds so it's likely that with small adjustments the number could be reduced.
+One thing to note is that the following results include only the benchmarks which passed correctness checks and in this regard chipStar ended up successfully running 6 \myhl{fewer benchmarks} compared to SYCL. A lot of these benchmarks have quite tight epsilon bounds so it's likely that with small adjustments the number could be reduced.
 
-In order to analyze the benefits of IMF, we modified the chipStar device library to link against IMF for exp and sqrt calls and tested the performance again which resulted bilateral benchmark going from 0.60x to 0.81x and adam benchmark going from 0.16x to 0.50x. The keough benchmark did not call any math functions.
+In order to analyze the benefits of IMF, we modified the chipStar device library to link against IMF for exp and sqrt calls and tested the performance again which resulted \myhl{in the} adam benchmark going from 0.16x to 0.50x.
 
-After we applied the -cl-fast-relaxed math JIT flag, all of these benchmarks performed equally well in \chipstar and DPC++. In conclusion, all the cases where chipStar is slower than DPC++ can be explained by the differences in math device library and the more aggressive default optimization of the IR in terms of floating point calculations due to DPC++ defaulting to -fp-model=fast.
+After we applied the -cl-fast-relaxed math \gls{jit} flag, all of these benchmarks performed equally well in \chipstar and \gls{dpc}. In conclusion, all the cases where chipStar is slower than \gls{dpc} can be explained by the differences in math device library and the more aggressive default optimization of the \gls{ir} in terms of floating point calculations due to \gls{dpc} defaulting to -fp-model=fast.
 
-There are 9 benchmarks (\textasciitilde{}15\%)  where chipStar-v1.2.1 outperforms DPC++ by more than 20\%. Of these, most significant difference is seen in gaussian. Upon examination, the time spent inside kernels is identical between these two runtimes so the most likely reason for the difference would be the DPC++ overhead. This overhead cost could be comprised of either DPC++ startup costs, DPC++ kernel invocation costs or a combination of both.
+\myhl{We selected} 9 benchmarks where chipStar-v1.2.1 outperforms \gls{dpc} \myhl{for closer examination}. Of these, most significant difference is seen in gaussian. Upon \myhl{further examination}, the time spent inside kernels is identical between these two runtimes so the most likely reason for the difference would be \gls{dpc} overhead. This overhead cost could be comprised of either \gls{dpc} startup costs, \gls{dpc} kernel invocation costs or a combination of both.
+\textbf{}
+To test for this, we isolated the outperforming benchmarks and performed a \myhl{scaling} experiment by comparing performance on the original problem size to the performance achieved with the number of iterations \myhl{or problem size increased by 5x} (Fig.~\ref{fig:chipstar-outperform-sycl-1x}). \myhl{This scaling leaves the runtime of a single kernel unchanged, which} isolates the \gls{dpc} startup overheads.
 
-To test for this, we isolated the outperforming benchmarks and performed a weak scaling experiment by comparing performance on the original problem size (Fig.~\ref{fig:chipstar-outperform-sycl-1x}) to the performance achieved with the number of iterations increased by 5x for benchmarks that had it as an argument (Fig.~\ref{fig:chipstar-outperform-sycl-5x}). Scaling the iterations and not the cost of a single kernel operation isolates the DPC++ startup overheads.
-
-\begin{figure}
+\begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{outperform-1x.png}
-    \caption{Benchmarks where chipStar is outperforming DPC++. Original problem size.}
+    \includegraphics[width=1\linewidth]{Figures-2025/chipStar-vs-sycl-scaled.pdf}
+    \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{at 1x and 5x problem sizes}.}
     \label{fig:chipstar-outperform-sycl-1x}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{outperform-5x.png}
-    \caption{Benchmarks where chipStar is outperforming DPC++. 5x the original problem size.}
-    \label{fig:chipstar-outperform-sycl-5x}
-\end{figure}
+\end{figure*}
 
-Scaling the number of iterations reduced the geomean chipStar-v1.2.1 speedup from 1.31x to 1.17x indicating that DPC++
+Scaling the number of iterations reduced the geomean chipStar-v1.2.1 speedup from 1.31x to 1.17x indicating that \gls{dpc}
 has significantly higher startup costs compared to chipStar.
 
 We analyzed the cases with the most dramatic differences and identified various explanations:
 Many of the benchmarks executed very short kernel commands, making the benchmark actually mostly measure the host API call execution speed.
 For example, the ``overlay'' benchmark could be sped up significantly by switching off the profiling command queue feature. 
-In some cases the device built-ins were more optimized in \chipstar than in DPC++, in some cases it was the opposite.
-For example, when we compared the \chipstar and DPC++ LLVM IRs of the device code for the ``nlll'' benchmark, we found that only \chipstar performed the if-conversion optimization that converts some of the very small branches to conditional moves, which provided significant benefits.
+In some cases the device built-ins were more optimized in \chipstar than in \gls{dpc}, in some cases it was the opposite.
+For example, when we compared the \chipstar and \gls{dpc} LLVM \gls{ir}s of the device code for the ``nlll'' benchmark, we found that only \chipstar performed the if-conversion optimization that converts some of the very small branches to conditional moves, which provided significant benefits.
 
-In conclusion, \chipstar has lower startup costs than DPC++ and either slightly outperforms or matches DPC++ performance across a variety of benchmarks through there are some exceptions in either direction.
+In conclusion, \chipstar has lower startup costs than \gls{dpc} and either slightly outperforms or matches \gls{dpc} performance across a variety of benchmarks \myhl{though} there are some exceptions in either direction.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \subsection{CUDA on NVIDIA CUDA SDK}
 
 It is interesting to compare the performance of CUDA programs compiled and ran using the NVIDIA's proprietary CUDA versus \chipstar over an OpenCL runtime. In this experiment, we first compiled applications using the CUDA SDK 12.4 to get a baseline. The same benchmark cases (the CUDA versions) were then compiled using \chipstar to the portable fat binary that uses OpenCL as the portability layer which was then run on rusticl/zink, an OpenCL implementation on top of NVidia's proprietary Vulkan driver. The execution time when compiling using strict maths was measured on an NVIDIA RTX 3060 GPU with the results shown in Fig.~\ref{fig:rtx3060-cudasdk-vs-rusticl}. The geometrical of 1.01 tells that the overhead of the chipStar, the OpenCL API and the rusticl OpenCL runtimes is negligible on average. A few outlier cases vary to one direction or another.
 
-\begin{figure}[tb]
-      \includegraphics[scale=0.5]{hecbench_rtx3060_cudasdk_vs_rusticl_0based.pdf}
-      \caption{Performance of chipStar on chipStar/rusticl/zink relative to CUDA SDK. Higher is better for the chipStar/rusticl/zink.}
+\begin{figure*}
+       \centering
+       \includegraphics[width=1\linewidth]{Figures-2025/cuda-vs-rusticl-truncated.pdf}
+      \caption{\myhl{chipStar via rusticl/zink stack, speedup over CUDA SDK excluding 36 benchmarks where the performance difference was negligible}}
       \label{fig:rtx3060-cudasdk-vs-rusticl}
-\end{figure}
+\end{figure*}
 
 \subsection{HIP on AMD ROCm}
 
-Since \chipstar can be viewed as a more portable implementation of HIP, it is interesting to compare its speed against the original HIP implementation from AMD. For this comparison, we utilized the HIP compiler and runtime from the AMD ROCm package version 6.2.4 as a baseline to compile and execute a set of HeCbench HIP benchmarks on an AMD Radeon Pro VII GPU. To run the \chipstar fat binaries on the same GPU, we used the rusticl OpenCL implementation on the radeonsi driver. AMD's OpenCL implementation does not support SPIR-V input at the time of this writing, preventing its use in this comparison for running the \chipstar binaries.
+Since \chipstar can be viewed as a more portable implementation of HIP, it is interesting to compare its speed against the original HIP implementation from AMD. For this comparison, we utilized the HIP compiler and runtime from the AMD ROCm package version 6.2.4 as a baseline to compile and execute a set of HeCbench HIP benchmarks on an AMD Radeon Pro VII GPU. To run the \chipstar fat binaries on the same GPU, we used the rusticl OpenCL implementation on the radeonsi driver. AMD's OpenCL implementation does not support \gls{spirv} input at the time of this writing, preventing its use in this comparison for running the \chipstar binaries.
 
 We have already demonstrated that the \chipstar runtime does not introduce additional overheads in Fig. \ref{fig:best-vs-best} so the following performance differences are a product of rusticl, not \chipstar. Rusticl is still in the development phase and is not yet optimized for all targets, which explains the much larger performance differences in Fig. \ref{fig:radeonprovii_rocm_vs_rusticl} compared to Fig. \ref{fig:best-vs-best}
 
 Given the current state of rusticl, there is not much value in doing an extensive performance anomaly studies. However, one such anomaly is `pnpoly' which is more than 2.5x faster on chipStar as can be seen in Fig. \ref{fig:radeonprovii_rocm_vs_rusticl}. The reason is that ROCm is slightly faster for tile sizes smaller than 32 and for larger ones notably slower. Unfortunately for ROCm, the benchmark tracks times for the largest tile which happens to be the slowest one on ROCm. 
 
-\begin{figure}[tb]
-      \includegraphics[scale=0.5]{hecbench_radeonprovii_rocm_vs_rusticl-bda.pdf}
-      \caption{Speedup for chipStar/rusticl/radeonsi stack, relative to ROCm. Running on AMD Radeon Pro VII . Higher is better for chipStar/rusticl/radeonsi.
+\begin{figure*}
+      \centering
+      \includegraphics[width=1\linewidth]{Figures-2025/rocm-vs-chipstar.pdf}
+      \caption{\myhl{chipStar  via rusticl/radeonsi stack speedup over ROCm. Running on AMD Radeon Pro VII.}
       }
       \label{fig:radeonprovii_rocm_vs_rusticl}
-\end{figure}
+\end{figure*}
 
 \subsection{Portability Testing}
 
@@ -627,27 +657,28 @@ In order to test the extent of portability of the runtime API layer based on the
 \paragraph{RISC-V CPU \& PowerVR GPU:} In this experiment we utilized the VisionFive2 single board computer for building and running the benchmarks. PoCL~\cite{PoCL} was used for running the benchmarks on the CPU and the proprietary OpenCL driver from Imagination Technologies was used for the GPU.  The results are visualized in Fig.~\ref{fig:intel-visionfive2-gpu-cpu}. The lower performance (0.74 geom mean) of the PowerVR GPU vs RISC-V CPU can be explained by the GPU having much less on-chip resources than most benchmarks could utilize. 
 The GPU also has a native workgroup size of only 32 (subgroup size 16), while most HeCBench benchmarks use a workgroup size ranging from 128 to 1024, leading to additional thread context switches. Due to not being able to force the subgroup size to match the warp width in this platform also prevented some of the benchmarks from running. Furthermore, the GPU's limited local memory is used also to store images, samplers, the OpenCL constant data and pointers to global memory - in addition to the shared data of the application kernels~\cite{PowerVRPerfGuide}. The memory limitations and the lack of fp64 support were the main reason some of the test cases were not running at all on this platform.
 
-\begin{figure}
+\begin{figure*}
     \centering
-    \includegraphics[width=1\linewidth]{PowerVR.png}
-          \caption{Speed on PowerVR GPU normalized to the RISC-V CPU. }
+    \includegraphics[width=1\linewidth]{Figures-2025/riscv.pdf}
+          \caption{\myhl{chipStar on PowerVR GPU, speedup over RISC-V CPU. }}
     \label{fig:intel-visionfive2-gpu-cpu}
-\end{figure}
-\paragraph{Intel(R) Core(TM) i9-13900K} This platform has a 24-core 13th Gen Intel(R) Core(TM) i9-13900K and an Intel UHD Graphics 770 integrated GPU. OpenCL on the CPU and the GPU were supported by Intel's OpenCL drivers  24.35.30872.22. The results are shown in Fig.~\ref{fig:intel-i9-cpu-vs-igpu}.  It's important to note that the i9 CPU, having 24 cores, is quite powerful compared to the iGPU so we don't necessarily expect a significant offloading speedup in this case, especially when the OpenCL CPU driver is able to vectorize OpenCL work-items across the SIMD lanes of the CPU. However, as expected, most of the test cases run on this platform and are significantly faster on the iGPU, validating the portability as well as the offloading benefits.
+\end{figure*}
+% \paragraph{Intel(R) Core(TM) i9-13900K} This platform has a 24-core 13th Gen Intel(R) Core(TM) i9-13900K and an Intel UHD Graphics 770 integrated GPU. OpenCL on the CPU and the GPU were supported by Intel's OpenCL drivers  24.35.30872.22. The results are shown in Fig.~\ref{fig:intel-i9-cpu-vs-igpu}.  It's important to note that the i9 CPU, having 24 cores, is quite powerful compared to the iGPU so we don't necessarily expect a significant offloading speedup in this case, especially when the OpenCL CPU driver is able to vectorize OpenCL work-items across the SIMD lanes of the CPU. However, as expected, most of the test cases run on this platform and are significantly faster on the iGPU, validating the portability as well as the offloading benefits.
 
-\begin{figure}[tb]
-      \includegraphics[width=1\linewidth]{chipstar-i9-igpu-vs-cpu.png}
-      \caption{Speed on Intel UHD Graphics 770 iGPU speed normalized to i9-13900K CPU.} 
-      \label{fig:intel-i9-cpu-vs-igpu}
-\end{figure}
+% \begin{figure*}[tb]
+%       \includegraphics[width=1\linewidth]{Figures-2025/igpu-vs-cpu.pdf}
+%       \caption{Speed on Intel UHD Graphics 770 iGPU speed normalized to i9-13900K CPU.} 
+%       \label{fig:intel-i9-cpu-vs-igpu}
+% \end{figure*}
 
 \paragraph{ARM Cortex A53+A73 CPU \& Mali G52 GPU} For the CPU, PoCL~\cite{PoCL} was used as the OpenCL driver while the GPU was supported by the ARM's proprietary OpenCL driver OpenCL C 3.0 v1.r40p0-01eac0.06c59e7df4d178b1ae2ad8082e91ad02. The results are shown in Fig.~\ref{fig:mali-vs-cortex}. A lot of applications were not able to run because of limited memory in the GPU and lack of double precision floating point support. However, various benchmarks showed significant benefits from CPU to GPU offloading, as expected.
 
-\begin{figure}[tb]
-      \includegraphics[scale=0.4]{mali.png}
-      \caption{Speed on ARM Mali GPU normalized to the ARM Cortex CPU.}
+\begin{figure*}
+      \centering
+      \includegraphics[width=1\linewidth]{Figures-2025/arm.pdf}
+      \caption{\myhl{chipStar on ARM Mali GPU speedup over ARM Cortex CPU.}}
       \label{fig:mali-vs-cortex}
-\end{figure}
+\end{figure*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -708,21 +739,21 @@ Nvidia A100          & \begin{tabular}[c]{@{}c@{}}1.66\\ (1x)\end{tabular} & 0.0
 \section{Related Work}
 \label{section:relatedWork}
 
-The origin of \textit{chipstar} is on the HIPCL~\cite{HIPCL} prototype which first tested the concept of compiling HIP programs to fat binaries relying on OpenCL and SPIR-V. The \chipstar tool described in this article is a result of an almost a complete rewrite of the HIPCL code base and over approximately three years of continuous development work by multiple partners and HPC users. The HIPCL code base was initially forked to a separate code base to utilize the Level Zero~\cite{l0} low level API directly (HIPLZ~\cite{HIPLZ}) after which the OpenCL backend of HIPCL and the Level Zero backend of HIPLZ were merged to the same code base discussed in this article.
+The origin of \textit{chipstar} is on the HIPCL~\cite{HIPCL} prototype which first tested the concept of compiling HIP programs to fat binaries relying on OpenCL and \gls{spirv}. The \chipstar tool described in this article is a result of an almost a complete rewrite of the HIPCL code base and over approximately three years of continuous development work by multiple partners and HPC users. The HIPCL code base was initially forked to a separate code base to utilize the Level Zero~\cite{l0} low level API directly (HIPLZ~\cite{HIPLZ}) after which the OpenCL backend of HIPCL and the Level Zero backend of HIPLZ were merged to the same code base discussed in this article.
 A large number of missing essential features have been implemented since the initial prototypes were published. This article thus significantly expands upon the original poster abstract that introduced the early-prototype-stage HIPCL and now presents a much more mature software stack usable for a wider range of real-world workloads.
 
 When comparing \chipstar to other HIP implementations, obviously the original ROCm, the AMD's official GPU software platform~\cite{ROCm}, is the baseline. ROCm consists of the general purpose programming API compilation and runtime support for HIP, and a set of libraries that support different degrees of compatibility with the CUDA platform. \chipstar is not a new backend in addition to the AMD GPU and NVIDIA GPU backends provided by the AMD's offering, but has an important technical difference: \chipstar aims to offer runtime portability by its open standard based fat binary, removing the need to recompile the input software per target vendor platform, which is the case with ROCm.
 
 SYCLomatic~\cite{SYCLomatic} is a tool contributed by Intel Corporation for converting CUDA sources to the cross-vendor open standard SYCL~\cite{SYCL}. Similar to AMD's HIPify, but in contrast to \chipstar which aims for source-level compatibility, SYCLomatic is a source-to-source conversion tool, which has its good and bad sides. The most apparent implication of relying on source-to-source conversion is more about maintenance aspects than technical ones; it neccessitates the further development of the converted application to proceed using the SYCL API instead or in addition to CUDA. The main drawback is that in reality many code bases are difficult or impossible to convert solely to SYCL without having the CUDA version as a backup due to legacy, risk-management or technical reasons. The main benefit is that SYCL is an open standard, in constrast to CUDA, enabling more fair competition ground between hardware vendors. Thus, being able to target many platforms from a fat binary compiled from the unmodified CUDA/HIP source code base using a \chipstar-style open platform approach can have its benefits. Furthermore, since \chipstar is not a linkage-time or binary translation solution, but requires recompilation, it coincidentally also encourages utilizing and further developing the cross-vendor ecosystem APIs it relies upon. Furthermore, as of this writing SYCLomatic supports only CUDA, not HIP, while HIP has an increasing number of new applications implemented directly using it.
 
-ZLUDA~\cite{ZLUDA} is a tool for running unmodified CUDA binaries on AMD GPUs. It works by reimplementing the \cuda driver API, and converting NVIDIA PTX~\cite{ptx} to the vendor-specific IRs. Since it is a ``drop-in solution'' that works at program loading/linkage time, it can execute unmodified CUDA fat binaries, which is very comfortable to the end users as it doesn't require access to the source code of the application. While we see ZLUDA as an excellent tool, it requires reverse engineering CUDA SDK's binary interfaces and keeping up-to-date with the NVIDIA PTX as it evolves. We believe, in the longer term, especially as more of the missing extensions we describe are adopted by OpenCL implementations, \chipstar can provide a more robust solution. 
+ZLUDA~\cite{ZLUDA} is a tool for running unmodified CUDA binaries on AMD GPUs. It works by reimplementing the \cuda driver API, and converting NVIDIA PTX~\cite{ptx} to the vendor-specific \gls{ir}s. Since it is a ``drop-in solution'' that works at program loading/linkage time, it can execute unmodified CUDA fat binaries, which is very comfortable to the end users as it doesn't require access to the source code of the application. While we see ZLUDA as an excellent tool, it requires reverse engineering CUDA SDK's binary interfaces and keeping up-to-date with the NVIDIA PTX as it evolves. We believe, in the longer term, especially as more of the missing extensions we describe are adopted by OpenCL implementations, \chipstar can provide a more robust solution. 
 In addition, ZLUDA also doesn't support HIP as an input and now only targets AMD GPUs, whereas a key goal of \chipstar is extensive cross-vendor portability.
 
 MCUDA~\cite{MCUDA} is the oldest tool we found for porting CUDA programs to non-NVIDIA platforms. MCUDA does source-to-source translation of kernels in a fashion that the translated kernels can execute efficiently on CPUs on a single CPU thread while respecting the barrier synchronization. In the case of \chipstar, since it uses OpenCL as its portability layer, it can similarly target also vectorized CPU execution through CPU-targeting OpenCL implementations such as the Intel OpenCL CPU driver and PoCL's CPU drivers~\cite{PoCL}. Both of them are capable of vectorizing work-items (CUDA/HIP threads) inside work-groups, which translates to implicit autovectorization of CUDA/HIP kernels across CUDA threads and provide the benefits of CPU execution such as easier kernel debugging.
 
-Swan~\cite{Swan} is another early source-to-source tool for CUDA porting. It generates OpenCL code from CUDA, providing similar level of portability as \chipstar does. Another similar tool, CU2CL~\cite{CU2CL} was published in the same year as \cite{Swan}. Neither Swan nor CU2CL are maintained any longer.  In comparison to \chipstar, the main technical differences to these tools are that \chipstar utilizes the latest version of the OpenCL standard to support the newer CUDA/HIP features, uses SPIR-V as the intermediate language (no need to generate textual OpenCL C with its limitations) and it doesn't suffer from problems related to source-to-source translations as \chipstar provides source-level compatibility.
+Swan~\cite{Swan} is another early source-to-source tool for CUDA porting. It generates OpenCL code from CUDA, providing similar level of portability as \chipstar does. Another similar tool, CU2CL~\cite{CU2CL} was published in the same year as \cite{Swan}. Neither Swan nor CU2CL are maintained any longer.  In comparison to \chipstar, the main technical differences to these tools are that \chipstar utilizes the latest version of the OpenCL standard to support the newer CUDA/HIP features, uses \gls{spirv} as the intermediate language (no need to generate textual OpenCL C with its limitations) and it doesn't suffer from problems related to source-to-source translations as \chipstar provides source-level compatibility.
 
-The closest comparable CUDA porting tool we could find is CUDA-on-CL~\cite{CUDAonCL}. Like \chipstar, it similarly compiles CUDA programs using Clang/LLVM-based compiler chain to binaries which then execute on OpenCL platforms. However, similarly to Swan and CU2L, it compiles device kernels to OpenCL C whereas \chipstar uses SPIR-V as the portable binary format. Other technical differences in \chipstar are related to the use of modern OpenCL standard features to implement some of the features of CUDA. These include using SVM to implement raw pointers and implementing warp-level primitives such as shuffles using the subgroup features. 
+The closest comparable CUDA porting tool we could find is CUDA-on-CL~\cite{CUDAonCL}. Like \chipstar, it similarly compiles CUDA programs using Clang/LLVM-based compiler chain to binaries which then execute on OpenCL platforms. However, similarly to Swan and CU2L, it compiles device kernels to OpenCL C whereas \chipstar uses \gls{spirv} as the portable binary format. Other technical differences in \chipstar are related to the use of modern OpenCL standard features to implement some of the features of CUDA. These include using \gls{svm} to implement raw pointers and implementing warp-level primitives such as shuffles using the subgroup features. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -732,11 +763,13 @@ The closest comparable CUDA porting tool we could find is CUDA-on-CL~\cite{CUDAo
 In this article, we presented \chipstar, a compilation flow and a runtime for CUDA/HIP applications using open cross-vendor supported standards. In comparison to previous tools, \chipstar's goal is on source-level compatiblity which we believe has longer-term robustness benefits in comparison to binary translation. 
 It relies on open standards at the portability layer level which in our opinion has significant inherent far-reaching value.
 
-The performance of HIP benchmarks using \chipstar was shown to be on par or surpass their SYCL/DPC++ versions. We've also shown that \chipstar is very competitive against CUDA running on Nvidia GPU with comparisons to HIP and AMD hardware being less favorable due to OpenCL driver options on AMD hardware.
+The performance of HIP benchmarks using \chipstar was shown to be on par or surpass their SYCL/\gls{dpc} versions. We've also shown that \chipstar is very competitive against CUDA running on Nvidia GPU with comparisons to HIP and AMD hardware being less favorable due to OpenCL driver options on AMD hardware.
 
 An example of the source-level compatibility was provided with GAMESS-GPU-HF, a code base with a significant number of kernel code lines. This demonstrates that \chipstar is a useful option for applications that are not feasible to port to more cross-vendor supported open standard input APIs such as SYCL or OpenMP.
 
-In the future, as \chipstar focuses on expanding the HIP/CUDA feature coverage. The main aspect that requires more work is to expand the directly supported set of core libraries in the CUDA and HIP ecosystems to cover more real-world applications. On the HIP/CUDA core front, we aim to focus on the more advanced recent features such as collaborative groups.
+\myhl{In the future, we will focus on expanding the HIP/CUDA feature coverage such as Graphs API and collaborative workgroups in} \chipstar.\myhl{ We will also expand the set of supported core libraries (hipFFT, hipSPARSE, etc) in the CUDA and HIP ecosystems to enable more real-world applications.}
+
+%\myhl{In the future, }\chipstar\myhl{ will focus on expanding the HIP/CUDA feature coverage such as Graphs API and collaborative workgroups, while expanding the set of supported core libraries (hipFFT, hipSPARSE, etc) in the CUDA and HIP ecosystems to cover more real-world applications. }
 
 \begin{acks}
 
@@ -751,9 +784,9 @@ This research used resources of the Oak Ridge Leadership Computing Facility at t
 This research used resources of the National Energy Research Scientific Computing Center (NERSC), a Department of Energy Office of Science User Facility.
 
 \end{acks}
+\printglossary[type=\acronymtype]
 
-
-\bibliography{chipstar}
 \bibliographystyle{SageV}
+\bibliography{chipstar}
 
 \end{document}
