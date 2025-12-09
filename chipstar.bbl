@@ -1,0 +1,352 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{DOI:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{DOI:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem{ROCm}
+{Advanced Micro Devices, Inc}.
+\newblock {ROCm} documentation - release 4.5.0, 2023.
+\newblock \url{https://rocmdocs.amd.com/_/downloads/en/latest/pdf/}.
+
+\bibitem{hip}
+{Heterogeneous compute Interface for Portability (HIP) Programming Guide v5.3}.
+\newblock \url{https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3}
+  (accessed Apr. 5, 2023).
+
+\bibitem{SYCLomatic}
+{Intel Corporation and contributors}.
+\newblock {SYCLomatic}.
+\newblock {\url{https://github.com/oneapi-src/SYCLomatic} (accessed Apr. 4,
+  2023)}.
+
+\bibitem{ZLUDA}
+{ZLUDA: CUDA on Intel GPUs}.
+\newblock \url{https://github.com/vosen/ZLUDA}.
+
+\bibitem{OpenCL}
+{Khronos\textregistered{} OpenCL Working Group}.
+\newblock {The OpenCL\texttrademark{} Specification}.
+\newblock
+  \url{https://www.khronos.org/registry/OpenCL/specs/3.0-unified/pdf/OpenCL\_API.pdf}.
+\newblock Date accessed: \today.
+
+\bibitem{SPIRV}
+{John Kessenich and Boaz Ouriel and Raun Krisch}.
+\newblock {SPIR-V Specification}, 2023.
+\newblock {\url{https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.pdf}
+  (accessed Apr. 12, 2023)}.
+
+\bibitem{SYCL}
+{The Khronos\textsuperscript{\textregistered} SYCL\texttrademark ~Working
+  Group}.
+\newblock {SYCL\texttrademark ~2020 Specification}.
+\newblock \url{https://www.khronos.org/sycl/} (accessed Apr. 4, 2023).
+
+\bibitem{OpenMP}
+{OpenMP Architecture Review Board}.
+\newblock {OpenMP Application Programming Interface v5.2}, 2021.
+\newblock \url{https://www.openmp.org/}.
+
+\bibitem{10.1145/3559009.3569687}
+Doerfert J, Jasper M, Huber J et~al.
+\newblock Breaking the vendor lock: Performance portable programming through
+  openmp as target independent runtime layer.
+\newblock In \emph{Proceedings of the International Conference on Parallel
+  Architectures and Compilation Techniques}. PACT '22, New York, NY, USA:
+  Association for Computing Machinery.
+\newblock ISBN 9781450398688, p. 494–504.
+\newblock \doi{10.1145/3559009.3569687}.
+\newblock \urlprefix\url{https://doi.org/10.1145/3559009.3569687}.
+
+\bibitem{HSA}
+{Heterogeneous System Architecture Foundation}.
+\newblock {HSA} platform system architecture specification.
+\newblock
+  \url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-SysArch-1.2.pdf}
+  (accessed Apr. 13, 2023).
+
+\bibitem{HSART}
+{Heterogeneous System Architecture Foundation}.
+\newblock {HSA} runtime programmer's reference manual v1.1.1.
+\newblock
+  \url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-Runtime-1.1.1.pdf}
+  (accessed Apr. 13, 2023).
+
+\bibitem{Vulkan}
+{The Khronos\textsuperscript{\textregistered} Vulkan Working Group}.
+\newblock {Vulkan\textsuperscript{\textregistered} 1.3.246 - A Specification
+  (with all registered Vulkan extensions)}, 2023.
+\newblock
+  {\url{https://registry.khronos.org/vulkan/specs/1.3-extensions/pdf/vkspec.pdf}
+  (accessed Apr. 12, 2023)}.
+
+\bibitem{l0}
+{Intel Corporation}.
+\newblock oneapi level zero specification documentation.
+\newblock \url{http://spec.oneapi.io/level-zero/latest/index.html} (accessed
+  Apr. 5, 2023).
+
+\bibitem{10.1145/3529538.3530005}
+Alpay A, Soproni B, W\"{u}nsche H et~al.
+\newblock Exploring the possibility of a hipsycl-based implementation of
+  oneapi.
+\newblock In \emph{International Workshop on OpenCL}. IWOCL'22, New York, NY,
+  USA: Association for Computing Machinery.
+\newblock ISBN 9781450396585.
+\newblock \doi{10.1145/3529538.3530005}.
+
+\bibitem{LLVM}
+Lattner C and Adve V.
+\newblock {LLVM: A Compilation Framework for Lifelong Program Analysis \&
+  Transformation}.
+\newblock In \emph{{Proceedings of the 2004 International Symposium on Code
+  Generation and Optimization (CGO'04)}}. Palo Alto, California.
+
+\bibitem{OpenSYCLfatbin}
+Alpay A and Heuveline V.
+\newblock One pass to bind them: The first single-pass sycl compiler with
+  unified code representation across backends.
+\newblock In \emph{Proceedings of the 2023 International Workshop on OpenCL}.
+  IWOCL '23, New York, NY, USA: Association for Computing Machinery.
+\newblock ISBN 9798400707452.
+\newblock \doi{10.1145/3585341.3585351}.
+
+\bibitem{SPIR2}
+{The Khronos Group Inc}.
+\newblock {Standard Portable Intermediate Representation Specification}, 2014.
+\newblock {\url{https://registry.khronos.org/SPIR/specs/spir_spec-2.0.pdf}
+  (accessed Apr. 12, 2023)}.
+
+\bibitem{HSAIL}
+{Heterogeneous System Architecture Foundation}.
+\newblock {HSA Programmer's Reference Manual: HSAIL Virtual ISA and Programming
+  Model, Compiler Writer, and Object Format (BRIG)}.
+\newblock
+  \url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-PRM-1.2.pdf}
+  (accessed Apr. 12, 2023).
+
+\bibitem{SSA}
+Cytron R, Ferrante J, Rosen BK et~al.
+\newblock Efficiently computing static single assignment form and the control
+  dependence graph.
+\newblock \emph{ACM Trans Program Lang Syst} 1991; 13(4): 451–490.
+\newblock \doi{10.1145/115372.115320}.
+\newblock \urlprefix\url{https://doi.org/10.1145/115372.115320}.
+
+\bibitem{intel-usm}
+{Unified Shared Memory}.
+\newblock
+  \url{https://registry.khronos.org/OpenCL/extensions/intel/cl_intel_unified_shared_memory.html}.
+
+\bibitem{intel-buffer}
+{Device Buffer Address}.
+\newblock \url{https://github.com/KhronosGroup/OpenCL-Docs/pull/1159}.
+
+\bibitem{Clang}
+{Clang Compiler}.
+\newblock \url{http://clang.llvm.org/}.
+
+\bibitem{llvm-spirv}
+{SPIR-V Translation Tool}.
+\newblock \url{https://github.com/KhronosGroup/SPIRV-LLVM-Translator}.
+
+\bibitem{cuda-ulp}
+Cuda math function precision guarantees.
+\newblock
+  \urlprefix\url{https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/index.html#mathematical-functions-appendix}.
+
+\bibitem{opencl-ulp}
+Opencl math function precision guarantees.
+\newblock
+  \urlprefix\url{https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html#relative-error-as-ulps}.
+
+\bibitem{hip-ulp}
+Hip math function precision guarantees.
+\newblock
+  \urlprefix\url{https://rocm.docs.amd.com/projects/HIP/en/latest/reference/math_api.html}.
+
+\bibitem{ulp-comparisons-paper}
+Rydahl A, Huber J, McDonough EL et~al.
+\newblock Precision and performance analysis of {C} standard math library
+  functions on {GPU}s.
+\newblock \emph{Proceedings of the ACM on Programming Languages} 2023;
+  7(OOPSLA2): 1--26.
+\newblock \doi{10.1145/3624062.3624166}.
+
+\bibitem{cuda-lockstep}
+Cuda independent thread scheduling.
+\newblock
+  \url{https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/?utm_source=chatgpt.com#independent-thread-scheduling-7-x}.
+
+\bibitem{HeCbench}
+Jin Z and Vetter JS.
+\newblock A benchmark suite for improving performance portability of the sycl
+  programming model.
+\newblock In \emph{2023 IEEE International Symposium on Performance Analysis of
+  Systems and Software (ISPASS)}. pp. 325--327.
+\newblock \doi{10.1109/ISPASS57527.2023.00041}.
+
+\bibitem{intel-fp-fast}
+{Intel Floating Point Model}.
+\newblock
+  \url{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-1/fp-model-fp.html}.
+
+\bibitem{cuda-fast-math}
+{CUDA NVCC Fast Math}.
+\newblock \url{https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/}.
+
+\bibitem{imf-website}
+Imf device library.
+\newblock
+  \urlprefix\url{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2024-2/imf-device-library.html}.
+
+\bibitem{PoCL}
+J\"a\"askel\"ainen P, de~La~Lama CS, Schnetter E et~al.
+\newblock pocl: A performance-portable {OpenCL} implementation.
+\newblock \emph{International Journal of Parallel Programming} 2015; 43(5):
+  752--785.
+\newblock \doi{10.1007/s10766-014-0320-y}.
+\newblock \urlprefix\url{http://dx.doi.org/10.1007/s10766-014-0320-y}.
+
+\bibitem{PowerVRPerfGuide}
+{Introduction to the PowerVR Compute Development Recommendations}.
+\newblock
+  \url{https://docs.imgtec.com/performance-guides/compute-recommendations/html/topics/introduction/introduction.html}.
+
+\bibitem{aurora}
+{A}urora.
+\newblock \url{https://www.alcf.anl.gov/aurora}.
+\newblock \urlprefix\url{https://www.alcf.anl.gov/aurora}.
+
+\bibitem{gamess}
+Schmidt MW, Baldridge KK, Boatz JA et~al.
+\newblock General atomic and molecular electronic structure system.
+\newblock \emph{Journal of Computational Chemistry} 1993; 14(11): 1347--1363.
+
+\bibitem{gamess2}
+Gordon MS and Schmidt MW.
+\newblock Chapter 41 - advances in electronic structure theory: Gamess a decade
+  later.
+\newblock In Dykstra CE, Frenking G, Kim KS et~al. (eds.) \emph{Theory and
+  Applications of Computational Chemistry}. Amsterdam: Elsevier, 2005.
+\newblock pp. 1167 -- 1189.
+
+\bibitem{gamess_cuda1}
+Barca GMJ, Poole DL, Vallejo JLG et~al.
+\newblock Scaling the hartree-fock matrix build on summit.
+\newblock In \emph{SC20: International Conference for High Performance
+  Computing, Networking, Storage and Analysis}. pp. 1--14.
+\newblock \doi{10.1109/SC41405.2020.00085}.
+
+\bibitem{gamess_cuda2}
+Barca GJ, Snowdon C, Vallejo J et~al.
+\newblock Scaling correlated fragment molecular orbital calculations on summit.
+\newblock In \emph{SC22: International Conference for High Performance
+  Computing, Networking, Storage and Analysis}. Los Alamitos, CA, USA: IEEE
+  Computer Society, pp. 1--14.
+\newblock \doi{10.1109/SC41404.2022.00012}.
+\newblock
+  \urlprefix\url{https://doi.ieeecomputersociety.org/10.1109/SC41404.2022.00012}.
+
+\bibitem{summit}
+{Summit User Guide}.
+\newblock \url{https://docs.olcf.ornl.gov/systems/summit\_user\_guide.html}.
+
+\bibitem{mkl_shim}
+{H4I-MKLShim}.
+\newblock \url{https://github.com/CHIP-SPV/H4I-MKLShim}.
+\newblock \urlprefix\url{https://github.com/CHIP-SPV/H4I-MKLShim}.
+
+\bibitem{chipBLAS}
+{H4I-HipBLAS}.
+\newblock \url{https://github.com/CHIP-SPV/H4I-HipBLAS}.
+\newblock \urlprefix\url{https://github.com/CHIP-SPV/H4I-HipBLAS}.
+
+\bibitem{chipSOLVER}
+{H4I-HipSOLVER}.
+\newblock \url{https://github.com/CHIP-SPV/H4I-HipSOLVER}.
+\newblock \urlprefix\url{https://github.com/CHIP-SPV/H4I-HipSOLVER}.
+
+\bibitem{chipFFT}
+{H4I-HipFFT}.
+\newblock \url{https://github.com/CHIP-SPV/H4I-HipFFT}.
+\newblock \urlprefix\url{https://github.com/CHIP-SPV/H4I-HipFFT}.
+
+\bibitem{a100_measured}
+Kwack J, Tramm J, Bertoni C et~al.
+\newblock Evaluation of performance portability of applications and mini-apps
+  across amd, intel and nvidia gpus.
+\newblock In \emph{2021 International Workshop on Performance, Portability and
+  Productivity in HPC (P3HPC)}. pp. 45--56.
+\newblock \doi{10.1109/P3HPC54578.2021.00008}.
+
+\bibitem{applencourt2024ponte}
+Applencourt T, Sadawarte A, Muralidharan S et~al.
+\newblock Ponte vecchio across the atlantic: Single-node benchmarking of two
+  intel gpu systems.
+\newblock In \emph{IEEE International Workshop on Performance Modeling,
+  Benchmarking and Simulation of High Performance Computer Systems}.
+
+\bibitem{HIPCL}
+Babej M and J\"{a}\"{a}skel\"{a}inen P.
+\newblock {HIPCL}: Tool for porting {CUDA} applications to advanced {OpenCL}
+  platforms through {HIP}.
+\newblock In \emph{Proceedings of the International Workshop on OpenCL}. IWOCL
+  '20, New York, NY, USA: Association for Computing Machinery.
+\newblock ISBN 9781450375313.
+\newblock \doi{10.1145/3388333.3388641}.
+\newblock \urlprefix\url{https://doi.org/10.1145/3388333.3388641}.
+
+\bibitem{HIPLZ}
+Zhao J, Bertoni C, Young J et~al.
+\newblock {HIPLZ}: Enabling performance portability for exascale systems.
+\newblock In \emph{Proceedings of the HeteroPar 2022: 20th International
+  Workshop on Algorithms, Models and Tools for Parallel Computing on
+  Heterogeneous Platforms}. Springer.
+
+\bibitem{ptx}
+{P}arallel {T}hread {E}xecution ({PTX}) and {ISA}.
+\newblock \url{https://docs.nvidia.com/cuda/parallel-thread-execution/}.
+
+\bibitem{MCUDA}
+Stratton J, Stone S and Hwu W.
+\newblock Mcuda: An efficient implementation of cuda kernels for multi-core
+  cpus.
+\newblock In \emph{Languages and Compilers for Parallel Computing - 21st
+  International Workshop, LCPC 2008, Revised Selected Papers}. Lecture Notes in
+  Computer Science (including subseries Lecture Notes in Artificial
+  Intelligence and Lecture Notes in Bioinformatics).
+\newblock ISBN 3540897399, pp. 16--30.
+\newblock \doi{10.1007/978-3-540-89740-8_2}.
+\newblock 21st International Workshop on Languages and Compilers for Parallel
+  Computing, LCPC 2008 ; Conference date: 31-07-2008 Through 02-08-2008.
+
+\bibitem{Swan}
+Harvey M and {De Fabritiis} G.
+\newblock Swan: A tool for porting cuda programs to opencl.
+\newblock \emph{Computer Physics Communications} 2011; 182(4): 1093--1099.
+\newblock \doi{https://doi.org/10.1016/j.cpc.2010.12.052}.
+\newblock
+  \urlprefix\url{https://www.sciencedirect.com/science/article/pii/S0010465511000117}.
+
+\bibitem{CU2CL}
+Gardner M, Sathre P, Feng Wc et~al.
+\newblock {Characterizing the Challenges and Evaluating the Efficacy of a
+  CUDA-to-OpenCL Translator}.
+\newblock \emph{Parallel Computing} 2013; 39(12).
+
+\bibitem{CUDAonCL}
+Perkins H.
+\newblock Cuda-on-cl: A compiler and runtime for running nvidia® cuda™ c++11
+  applications on opencl™ 1.2 devices.
+\newblock In \emph{Proceedings of the 5th International Workshop on OpenCL}.
+  IWOCL 2017, New York, NY, USA: Association for Computing Machinery.
+\newblock ISBN 9781450352147.
+\newblock \doi{10.1145/3078155.3078156}.
+\newblock \urlprefix\url{https://doi.org/10.1145/3078155.3078156}.
+
+\end{thebibliography}

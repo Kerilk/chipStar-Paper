@@ -1,0 +1,13 @@
+\subsection*{\normalsize\sagesf\bfseries Acronyms}
+\textbf{CG} Coarse-grained buffer. 4\smallskip\medskip\\
+\textbf{DPC++} Data Parallel C++. 3, 6, 8--10, 15\smallskip\medskip\\
+\textbf{HSAIL} Heterogeneous system architecture intermediate language. 3\smallskip\medskip\\
+\textbf{HSA} Heterogeneous System Architecture. 2, 3\smallskip\medskip\\
+\textbf{IR} Intermediate Representation. 2, 3, 5, 8--10, 14\smallskip\medskip\\
+\textbf{ISA} Instruction Set Architecture. 2\smallskip\medskip\\
+\textbf{JIT} just-in-time. 2, 5, 6, 9, 10\smallskip\medskip\\
+\textbf{SPIR-V} new version of SPIR. 2--6, 9, 11, 14, 15\smallskip\medskip\\
+\textbf{SPIR} Standard Portable Intermediate Representation. 3\smallskip\medskip\\
+\textbf{SSA} Static Single Assignment. 3\smallskip\medskip\\
+\textbf{SVM} Shared Virtual Memory. 2, 4, 6, 7, 15\smallskip\medskip\\
+\textbf{USM} Unified Shared Memory. 4, 7

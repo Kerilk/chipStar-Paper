@@ -2,7 +2,7 @@
 
 chipstar.pdf: chipstar.tex chipstar.bib
 	pdflatex chipstar
-	bibtex chipstar
+	pdflatex chipstar
 	pdflatex chipstar
 
 watch:
@@ -10,4 +10,15 @@ watch:
 
 
 clean:
-	rm -f *.aux chipstar.pdf
+	rm -f \
+		chipstar.aux \
+		chipstar.acn \
+		chipstar.alg \
+		chipstar.blg \
+		chipstar.glg \
+		chipstar.glo \
+		chipstar.gls \
+		chipstar.ist \
+		chipstar.log \
+		chipstar.out \
+		chipstar.pdf
