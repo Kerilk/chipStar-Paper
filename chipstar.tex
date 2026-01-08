@@ -32,13 +32,13 @@
 \newboolean{showhighlights}
 \setboolean{showhighlights}{false}
 \ifthenelse{\boolean{showhighlights}}
-{ \newcommand{\myhl}[1]{\hl{#1}} }
-{ \newcommand{\myhl}[1]{#1} }
+{ \newcommand{\myhll}[1]{\hl{#1}} }
+{ \newcommand{\myhll}[1]{#1} }
 
-
+\newcommand{\myhl}[1]{#1}
 \usepackage{ifthen}
 \newboolean{showcomments}
-\setboolean{showcomments}{true}
+\setboolean{showcomments}{false}
 \ifthenelse{\boolean{showcomments}}
 { \newcommand{\mynote}[3]{
      \fbox{\bfseries\sffamily\scriptsize#1}
@@ -154,7 +154,7 @@ The key benefit of the software stack is its portability, which is demonstrated 
 
 \maketitle
 
-%\section{Introduction}
+\section{\texorpdfstring{\myhll{Introduction}}{Introduction}}
 
 \noindent The walled garden strategy is popular among market-dominating companies. The idea behind walled garden strategy is to lock in customers to a company's products by making escaping the gates of the garden as costly as possible. NVIDIA's CUDA software platform is considered to be one of such walled gardens. It helps NVIDIA to expand and retain their GPU market advantage, and at the same time maintain a high innovation pace on the software APIs since there is no need to work with standardization committees that always have to aim for a consensus among multiple participating vendors.
 
@@ -171,7 +171,7 @@ portability problem. In contrast to previous solutions that either require sourc
 With this article and the associated open source code base we make the following contributions:
 
 \begin{enumerate}
-  \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and \acrshort{spirv} cross-vendor open standards.
+  \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and \acrshort{spirv} \footnote{\myhll{See Section~9 for an Acronym Table.}} cross-vendor open standards.
   \item We evaluated \chipstar performance in comparison to running the CUDA applications directly using the NVIDIA SDK or converting the applications to a popular open-standard-based CUDA alternative SYCL.
   %~\cite{SYCL}
   \item We demonstrate a case study for the usability of OpenCL as a portability layer to implement other languages/APIs on top. Portability is shown by providing performance numbers on a RISC-V CPU \& PowerVR GPU,  ARM CPU and GPU, as well as on discrete GPUs from NVIDIA, AMD, and Intel. 
@@ -383,7 +383,7 @@ The offline compilation flow of \chipstar is built on the LLVM Project's~\cite{L
 
 \begin{figure*}
     \centering
-    \includegraphics[scale=1]{chipstar-compilation-v2.pdf}
+    \includegraphics[width=.9\textwidth]{chipstar-compilation-v2.pdf}
     \caption{The construction of a HIP fat binary. Device code is compiled into LLVM \gls{ir}, chipStar applies a series of LLVM passes at optimization time. The resulting \gls{ir} is embedded into the binary and linked against the device library. }
     \label{fig:compilation}
 \end{figure*}
@@ -400,7 +400,7 @@ To enhance runtime portability, the built-in library of the on-line device provi
 
 \begin{figure*}
     \centering
-    \includegraphics[scale=0.9]{chipstar-rt-compile-n-link.pdf}
+    \includegraphics[width=\textwidth]{chipstar-rt-compile-n-link.pdf}
     \caption{The just-in-time compilation flow. Once the program is executed, prior to calling main, a series of internal HIP calls are executed. These calls parse the fat binary and register the embedded \gls{spirv} files as modules. In lazy \gls{jit} mode, these modules are not compiled into kernels until their launch is requested.}
     \label{fig:online-compilation}        
 \end{figure*}
@@ -427,6 +427,7 @@ OpenCL covers the use case of accessing fast but less accurate hardware operatio
 
 \begin{table*}
 \centering
+\large
 \begin{tabular}{lcccc}
 \hline
 \textbf{Function} & \textbf{Intel Arc A770} & \textbf{Intel UHD 770} & \textbf{AMD gfx906} & \textbf{Intel i9-13900K} \\
@@ -443,7 +444,7 @@ log               & 1                       & 1                      & 2        
 
 \begin{table*}
 \centering
-
+\large
 \begin{tabular}{lcccc}
 \hline
 \textbf{Function} & \textbf{Intel Arc A770} & \textbf{Intel UHD 770} & \textbf{AMD gfx906} & \textbf{Intel i9-13900K} \\
@@ -472,7 +473,7 @@ The \chipstar compilation flow is built such that different advanced OpenCL feat
 
 \begin{table*}[ht]
     \centering
-    \begin{tabular}{|p{5 cm}|p{5cm}|}
+    \begin{tabular}{|p{5 cm}|p{10cm}|}
     \hline
 \textbf{Extension} & \textbf{CUDA/HIP feature(s)} \\
     \hline
@@ -498,7 +499,7 @@ cl\_khr\_subgroup\_shuffle          & Warp-level shuffle operations. \\
 \begin{table*}[ht]
     \centering
 
-    \begin{tabular}{|p{5 cm}|p{5cm}|p{5cm}|}
+    \begin{tabular}{|p{5cm}|p{8.7cm}|p{2.3cm}|}
     \hline
 \textbf{Extension (working title)} & \textbf{CUDA/HIP feature(s)} & \textbf{Status} \\
     \hline
@@ -529,7 +530,7 @@ cl\_ext\_subgroup\_id\_mapping & For forcing the desired thread id mapping when 
 
 
 
-In Table~\ref{table:extensions} we summarize the standard extensions \chipstar can already utilize and which CUDA/HIP feature triggers their need. Table~\ref{table:proposedExtensions} describes further work-in-progress extension proposals we have identified to be useful for CUDA/HIP portability. These extensions are in different stages in the Khronos Group standardization process, which is noted in the table.\footnote{Note to reviewers: We will update the status for the final article version.}
+In Table~\ref{table:extensions} we summarize the standard extensions \chipstar can already utilize and which CUDA/HIP feature triggers their need. Table~\ref{table:proposedExtensions} describes further work-in-progress extension proposals we have identified to be useful for CUDA/HIP portability. These extensions are in different stages in the Khronos Group standardization process, which is noted in the table.%\footnote{Note to reviewers: We will update the status for the final article version.}
 
 Most of the extensions are relatively straightforward and the brief description in the table should suffice to grasp their purpose. However, the handling of warp-level primitives calls for a bit more thorough explanation:
 One of the execution model differences between CUDA and OpenCL is that CUDA presents a finer grained fixed size grouping of the threads (OpenCL work-items) than the blocks (work-groups) called a \textit{warp}. In earlier CUDA versions, the threads in a warp could be assumed to execute in lock-step, implying that the enabled threads in the same warp would execute the same instruction. This implied that in some cases explicit synchronization could be omitted: In case of a usual read-modify-update case, the programmer could trust that the warp's threads all execute the read part before any of them proceeds to the update part, enabling in-place-updates without explicit synchronization. In later versions of the CUDA specification, the use of lock-step behavior in program logic was deprecated, but the feature has to be supported for legacy applications~\cite{cuda-lockstep}.
@@ -570,7 +571,7 @@ Since both \chipstar and \gls{dpc} can use OpenCL as a backend, the evaluations 
 \begin{figure*}
     \centering
     \includegraphics[width=1\linewidth]{chipStar-vs-sycl-speedup-truncated.pdf}
-    \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{with relaxed math, excluding 20 benchmarks where the performance difference was negligible }}
+    \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{with relaxed math, excluding 20 benchmarks where the performance difference was \myhll{under 3\%}}}
     \label{fig:best-vs-best}
 \end{figure*}
 In Fig. \ref{fig:best-vs-best}, 
@@ -630,7 +631,7 @@ It is interesting to compare the performance of CUDA programs compiled and ran u
 \begin{figure*}
        \centering
        \includegraphics[width=1\linewidth]{cuda-vs-rusticl-truncated.pdf}
-      \caption{\myhl{chipStar via rusticl/zink stack, speedup over CUDA SDK excluding 36 benchmarks where the performance difference was negligible}}
+      \caption{\myhl{chipStar via rusticl/zink stack, speedup over CUDA SDK excluding 36 benchmarks where the performance difference was \myhll{under 3\%}}}
       \label{fig:rtx3060-cudasdk-vs-rusticl}
 \end{figure*}
 
@@ -771,6 +772,9 @@ An example of the source-level compatibility was provided with GAMESS-GPU-HF, a 
 
 %\myhl{In the future, }\chipstar\myhl{ will focus on expanding the HIP/CUDA feature coverage such as Graphs API and collaborative workgroups, while expanding the set of supported core libraries (hipFFT, hipSPARSE, etc) in the CUDA and HIP ecosystems to cover more real-world applications. }
 
+%\printglossary[type=\acronymtype,numberedsection=autolabel,title=\texorpdfstring{\myhll{Acronyms}}{Acronyms}]
+\input{chipstar.acr}
+
 \begin{acks}
 
 This research was supported by the Exascale Computing Project (17-SC-20-SC), a collaborative effort of the U.S. Department of Energy Office of Science and the National Nuclear Security Administration.
@@ -783,11 +787,9 @@ This research used resources of the Oak Ridge Leadership Computing Facility at t
 
 This research used resources of the National Energy Research Scientific Computing Center (NERSC), a Department of Energy Office of Science User Facility.
 
-Tampere University authors' contributions were in part funded via the DARE SGA1 Project, which is an European High-Performance Computing Joint Undertaking (JU) under Grant Agreement No. 101202459. The JU receives support from the European Union’s Horizon Europe research and innovation programme and Spain, Germany, Czechia, Italy, Netherlands, Belgium, Finland, Greece, Croatia, Portugal, Poland, Sweden, France and Austria.
+\myhll{Tampere University authors' contributions were in part funded via the DARE SGA1 Project, which is an European High-Performance Computing Joint Undertaking (JU) under Grant Agreement No. 101202459. The JU receives support from the European Union’s Horizon Europe research and innovation programme and Spain, Germany, Czechia, Italy, Netherlands, Belgium, Finland, Greece, Croatia, Portugal, Poland, Sweden, France and Austria.}
 
 \end{acks}
-%\printglossary[type=\acronymtype]
-\input{chipstar.acr}
 
 \bibliographystyle{SageV}
 %\bibliography{chipstar}
