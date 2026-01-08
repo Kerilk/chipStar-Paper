@@ -377,16 +377,16 @@ An LLVM pass is responsible for lowering texture object API based texture functi
 
 This section discusses the compilation flow used by \chipstar. We introduce the overall compilation flow, the device library implementation and summarize our findings on the key needs to extend the OpenCL/\gls{spirv} standards to bridge key feature gaps between the specifications.
 
-\subsection{The Compilation Flow}
-
-The offline compilation flow of \chipstar is built on the LLVM Project's~\cite{LLVM} Clang~\cite{Clang} frontend which provides the frontend language handling and splitting of the single source input to the device and host parts. The overall compilation process is shown in Fig.~\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce \gls{spirv} binaries as an option to PTX or AMDIL for the device program. The LLVM \func{opt} tool is used to invoke special LLVM passes provided by \chipstar for lowering HIP features to the OpenCL-\gls{spirv} environment. The \gls{spirv} translation is performed using Khronos' LLVM-SPIRV-Translator tool~\cite{llvm-spirv}.
-
 \begin{figure*}
     \centering
     \includegraphics[width=.9\textwidth]{chipstar-compilation-v2.pdf}
     \caption{The construction of a HIP fat binary. Device code is compiled into LLVM \gls{ir}, chipStar applies a series of LLVM passes at optimization time. The resulting \gls{ir} is embedded into the binary and linked against the device library. }
     \label{fig:compilation}
 \end{figure*}
+
+\subsection{The Compilation Flow}
+
+The offline compilation flow of \chipstar is built on the LLVM Project's~\cite{LLVM} Clang~\cite{Clang} frontend which provides the frontend language handling and splitting of the single source input to the device and host parts. The overall compilation process is shown in Fig.~\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce \gls{spirv} binaries as an option to PTX or AMDIL for the device program. The LLVM \func{opt} tool is used to invoke special LLVM passes provided by \chipstar for lowering HIP features to the OpenCL-\gls{spirv} environment. The \gls{spirv} translation is performed using Khronos' LLVM-SPIRV-Translator tool~\cite{llvm-spirv}.
 
 Most of the compilation-related changes have been upstreamed to the LLVM project and very little compilation-related functionality remains within the \chipstar code base. The notable exceptions are compiler passes that handle CUDA vs. OpenCL differences in \func{printf()}, implement a device side \func{abort()} feature, handling of CUDA's device-side global variables, and an indirect memory access analyzer. The indirect memory access analyzer marks kernels that are known to not indirectly access allocations, which removes  unnecessary synchronizations for the majority of
 benchmarks seen so far. Otherwise, due to CUDA's memory model, each launcher kernel can potentially access any previously allocated buffer, inducing significant unnecessary
@@ -467,10 +467,6 @@ Since we cannot make any guarantees about precision, we have chosen to map regul
 
 We plan to optimize this aspect in the future via a new standard extension with a set of built-ins that guarantee the CUDA accuracy requirements to the application programmer while enabling the targeted platform to optimize and implement them as efficiently as possible.
 
-\subsection{OpenCL Extensions}
-
-The \chipstar compilation flow is built such that different advanced OpenCL features and extensions are not required from the target platform's driver or device unless the compiled input application specifically needs them. Although the minimal OpenCL 3.0 feature set plus coarse-grained \gls{svm} and \gls{spirv} consumption support covers a significant part of the most commonly used CUDA and HIP features, some functionalities require or can be improved with extensions to the OpenCL or \gls{spirv} specifications.
-
 \begin{table*}[ht]
     \centering
     \begin{tabular}{|p{5 cm}|p{10cm}|}
@@ -495,6 +491,10 @@ cl\_khr\_subgroup\_shuffle          & Warp-level shuffle operations. \\
     \caption{OpenCL 3.0 standard extensions that \chipstar can use currently to implement CUDA/HIP features if the compiled application uses them.}
     \label{table:extensions}
 \end{table*}
+
+\subsection{OpenCL Extensions}
+
+The \chipstar compilation flow is built such that different advanced OpenCL features and extensions are not required from the target platform's driver or device unless the compiled input application specifically needs them. Although the minimal OpenCL 3.0 feature set plus coarse-grained \gls{svm} and \gls{spirv} consumption support covers a significant part of the most commonly used CUDA and HIP features, some functionalities require or can be improved with extensions to the OpenCL or \gls{spirv} specifications.
 
 \begin{table*}[ht]
     \centering
@@ -599,16 +599,16 @@ In order to analyze the benefits of IMF, we modified the chipStar device library
 
 After we applied the -cl-fast-relaxed math \gls{jit} flag, all of these benchmarks performed equally well in \chipstar and \gls{dpc}. In conclusion, all the cases where chipStar is slower than \gls{dpc} can be explained by the differences in math device library and the more aggressive default optimization of the \gls{ir} in terms of floating point calculations due to \gls{dpc} defaulting to -fp-model=fast.
 
-\myhl{We selected} 9 benchmarks where chipStar-v1.2.1 outperforms \gls{dpc} \myhl{for closer examination}. Of these, most significant difference is seen in gaussian. Upon \myhl{further examination}, the time spent inside kernels is identical between these two runtimes so the most likely reason for the difference would be \gls{dpc} overhead. This overhead cost could be comprised of either \gls{dpc} startup costs, \gls{dpc} kernel invocation costs or a combination of both.
-\textbf{}
-To test for this, we isolated the outperforming benchmarks and performed a \myhl{scaling} experiment by comparing performance on the original problem size to the performance achieved with the number of iterations \myhl{or problem size increased by 5x} (Fig.~\ref{fig:chipstar-outperform-sycl-1x}). \myhl{This scaling leaves the runtime of a single kernel unchanged, which} isolates the \gls{dpc} startup overheads.
-
 \begin{figure*}
     \centering
     \includegraphics[width=1\linewidth]{chipStar-vs-sycl-scaled.pdf}
     \caption{\myhl{chipStar speedup over SYCL via} \gls{dpc} \myhl{at 1x and 5x problem sizes}.}
     \label{fig:chipstar-outperform-sycl-1x}
 \end{figure*}
+
+\myhl{We selected} 9 benchmarks where chipStar-v1.2.1 outperforms \gls{dpc} \myhl{for closer examination}. Of these, most significant difference is seen in gaussian. Upon \myhl{further examination}, the time spent inside kernels is identical between these two runtimes so the most likely reason for the difference would be \gls{dpc} overhead. This overhead cost could be comprised of either \gls{dpc} startup costs, \gls{dpc} kernel invocation costs or a combination of both.
+\textbf{}
+To test for this, we isolated the outperforming benchmarks and performed a \myhl{scaling} experiment by comparing performance on the original problem size to the performance achieved with the number of iterations \myhl{or problem size increased by 5x} (Fig.~\ref{fig:chipstar-outperform-sycl-1x}). \myhl{This scaling leaves the runtime of a single kernel unchanged, which} isolates the \gls{dpc} startup overheads.
 
 Scaling the number of iterations reduced the geomean chipStar-v1.2.1 speedup from 1.31x to 1.17x indicating that \gls{dpc}
 has significantly higher startup costs compared to chipStar.
@@ -635,6 +635,14 @@ It is interesting to compare the performance of CUDA programs compiled and ran u
       \label{fig:rtx3060-cudasdk-vs-rusticl}
 \end{figure*}
 
+\begin{figure*}
+      \centering
+      \includegraphics[width=1\linewidth]{rocm-vs-chipstar.pdf}
+      \caption{\myhl{chipStar  via rusticl/radeonsi stack speedup over ROCm. Running on AMD Radeon Pro VII.}
+      }
+      \label{fig:radeonprovii_rocm_vs_rusticl}
+\end{figure*}
+
 \subsection{HIP on AMD ROCm}
 
 Since \chipstar can be viewed as a more portable implementation of HIP, it is interesting to compare its speed against the original HIP implementation from AMD. For this comparison, we utilized the HIP compiler and runtime from the AMD ROCm package version 6.2.4 as a baseline to compile and execute a set of HeCbench HIP benchmarks on an AMD Radeon Pro VII GPU. To run the \chipstar fat binaries on the same GPU, we used the rusticl OpenCL implementation on the radeonsi driver. AMD's OpenCL implementation does not support \gls{spirv} input at the time of this writing, preventing its use in this comparison for running the \chipstar binaries.
@@ -644,11 +652,10 @@ We have already demonstrated that the \chipstar runtime does not introduce addit
 Given the current state of rusticl, there is not much value in doing an extensive performance anomaly studies. However, one such anomaly is `pnpoly' which is more than 2.5x faster on chipStar as can be seen in Fig. \ref{fig:radeonprovii_rocm_vs_rusticl}. The reason is that ROCm is slightly faster for tile sizes smaller than 32 and for larger ones notably slower. Unfortunately for ROCm, the benchmark tracks times for the largest tile which happens to be the slowest one on ROCm. 
 
 \begin{figure*}
-      \centering
-      \includegraphics[width=1\linewidth]{rocm-vs-chipstar.pdf}
-      \caption{\myhl{chipStar  via rusticl/radeonsi stack speedup over ROCm. Running on AMD Radeon Pro VII.}
-      }
-      \label{fig:radeonprovii_rocm_vs_rusticl}
+    \centering
+    \includegraphics[width=1\linewidth]{riscv.pdf}
+          \caption{\myhl{chipStar on PowerVR GPU, speedup over RISC-V CPU. }}
+    \label{fig:intel-visionfive2-gpu-cpu}
 \end{figure*}
 
 \subsection{Portability Testing}
@@ -658,12 +665,6 @@ In order to test the extent of portability of the runtime API layer based on the
 \paragraph{RISC-V CPU \& PowerVR GPU:} In this experiment we utilized the VisionFive2 single board computer for building and running the benchmarks. PoCL~\cite{PoCL} was used for running the benchmarks on the CPU and the proprietary OpenCL driver from Imagination Technologies was used for the GPU.  The results are visualized in Fig.~\ref{fig:intel-visionfive2-gpu-cpu}. The lower performance (0.74 geom mean) of the PowerVR GPU vs RISC-V CPU can be explained by the GPU having much less on-chip resources than most benchmarks could utilize. 
 The GPU also has a native workgroup size of only 32 (subgroup size 16), while most HeCBench benchmarks use a workgroup size ranging from 128 to 1024, leading to additional thread context switches. Due to not being able to force the subgroup size to match the warp width in this platform also prevented some of the benchmarks from running. Furthermore, the GPU's limited local memory is used also to store images, samplers, the OpenCL constant data and pointers to global memory - in addition to the shared data of the application kernels~\cite{PowerVRPerfGuide}. The memory limitations and the lack of fp64 support were the main reason some of the test cases were not running at all on this platform.
 
-\begin{figure*}
-    \centering
-    \includegraphics[width=1\linewidth]{riscv.pdf}
-          \caption{\myhl{chipStar on PowerVR GPU, speedup over RISC-V CPU. }}
-    \label{fig:intel-visionfive2-gpu-cpu}
-\end{figure*}
 % \paragraph{Intel(R) Core(TM) i9-13900K} This platform has a 24-core 13th Gen Intel(R) Core(TM) i9-13900K and an Intel UHD Graphics 770 integrated GPU. OpenCL on the CPU and the GPU were supported by Intel's OpenCL drivers  24.35.30872.22. The results are shown in Fig.~\ref{fig:intel-i9-cpu-vs-igpu}.  It's important to note that the i9 CPU, having 24 cores, is quite powerful compared to the iGPU so we don't necessarily expect a significant offloading speedup in this case, especially when the OpenCL CPU driver is able to vectorize OpenCL work-items across the SIMD lanes of the CPU. However, as expected, most of the test cases run on this platform and are significantly faster on the iGPU, validating the portability as well as the offloading benefits.
 
 % \begin{figure*}[tb]
