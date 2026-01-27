@@ -168,10 +168,10 @@ An open source HIP/CUDA software platform solely based on open standards with a 
 With the \chipstar software stack described in this article we aim to alleviate the CUDA/HIP application
 portability problem. In contrast to previous solutions that either require source-to-source conversion from CUDA programs~\cite{SYCLomatic}, that can lead to costly multiple codebase maintenance, or aim for binary-level compatibility of existing CUDA/HIP programs~\cite{ZLUDA} that rely on questionable reverse engineering of proprietary binary interfaces -- a brittle longer-term strategy -- \chipstar chooses a middle-ground approach which enables source-level compatibility of HIP/CUDA programs by compiling them to a runtime portable ``fat binary'' (a single executable that contains multiple code objects, each compiled for a different architecture)  that utilizes solely open standards and can execute on any platform supporting the required standard features without recompilation.
 
-With this article and the associated open source code base we make the following contributions:
+With this article and the associated open source code base we make the following contributions: \footnote{\myhll{See Section~9 for an Acronym Table.}}
 
 \begin{enumerate}
-  \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and \acrshort{spirv} \footnote{\myhll{See Section~9 for an Acronym Table.}} cross-vendor open standards.
+  \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and \acrshort{spirv} cross-vendor open standards.
   \item We evaluated \chipstar performance in comparison to running the CUDA applications directly using the NVIDIA SDK or converting the applications to a popular open-standard-based CUDA alternative SYCL.
   %~\cite{SYCL}
   \item We demonstrate a case study for the usability of OpenCL as a portability layer to implement other languages/APIs on top. Portability is shown by providing performance numbers on a RISC-V CPU \& PowerVR GPU,  ARM CPU and GPU, as well as on discrete GPUs from NVIDIA, AMD, and Intel. 
