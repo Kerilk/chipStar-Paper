@@ -36,6 +36,19 @@
 %{ \newcommand{\myhl}[1]{\hl{#1}} }
 %{ \newcommand{\myhl}[1]{#1} }
 
+\newcounter{notelabelcount}
+
+% this macro makes the note number become the link to the endnote
+\newcommand{\myendnote}[1]{%
+   \addtocounter{notelabelcount}{1}%
+   \hyperref[notelabel\thenotelabelcount]{%
+   \endnote{%
+      \addtocounter{notelabelcount}{1}%
+      \phantomsection\label{notelabel\thenotelabelcount}%
+      {#1}%
+   }}%
+}
+
 \usepackage{ifthen}
 \newboolean{showcomments}
 \setboolean{showcomments}{false}
@@ -170,7 +183,7 @@ An open source HIP/CUDA software platform solely based on open standards with a 
 With the \chipstar software stack described in this article we aim to alleviate the CUDA/HIP application
 portability problem. In contrast to previous solutions that either require source-to-source conversion from CUDA programs~\mycite{SYCLomatic}, that can lead to costly multiple codebase maintenance, or aim for binary-level compatibility of existing CUDA/HIP programs that rely on questionable reverse engineering of proprietary binary interfaces -- a brittle longer-term strategy -- \chipstar chooses a middle-ground approach which enables source-level compatibility of HIP/CUDA programs by compiling them to a runtime portable ``fat binary'' (a single executable that contains multiple code objects, each compiled for a different architecture)  that utilizes solely open standards and can execute on any platform supporting the required standard features without recompilation.
 
-With this article and the associated open source code base we make the following contributions\endnote{See Section~\ref{\acronymtype} for an Acronym Table.}:
+With this article and the associated open source code base we make the following contributions\myendnote{See Section~\ref{\acronymtype} for an Acronym Table.}:
 
 \begin{enumerate}
   \item We publish internal design choices for the software platform \chipstar that enables porting applications from the NVIDIA-driven CUDA and AMD-driven ROCm platforms to any current and future platform supporting the OpenCL and \acrshort{spirv} cross-vendor open standards.
@@ -376,7 +389,7 @@ This section discusses the compilation flow used by \chipstar. We introduce the 
 
 \subsection{The Compilation Flow}
 
-The offline compilation flow of \chipstar is built on the LLVM Project's~\mycite{LLVM} Clang\endnote{\url{http://clang.llvm.org/}} frontend which provides the frontend language handling and splitting of the single source input to the device and host parts. The overall compilation process is shown in Fig.~\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce \gls{spirv} binaries as an option to PTX or AMDIL for the device program. The LLVM \func{opt} tool is used to invoke special LLVM passes provided by \chipstar for lowering HIP features to the OpenCL-\gls{spirv} environment. The \gls{spirv} translation is performed using Khronos' LLVM-SPIRV-Translator tool~\mycite{llvm-spirv}.
+The offline compilation flow of \chipstar is built on the LLVM Project's~\mycite{LLVM} Clang\myendnote{\url{http://clang.llvm.org/}} frontend which provides the frontend language handling and splitting of the single source input to the device and host parts. The overall compilation process is shown in Fig.~\ref{fig:compilation}. It relies on the CUDA/HIP frontend of Clang, which was extended to produce \gls{spirv} binaries as an option to PTX or AMDIL for the device program. The LLVM \func{opt} tool is used to invoke special LLVM passes provided by \chipstar for lowering HIP features to the OpenCL-\gls{spirv} environment. The \gls{spirv} translation is performed using Khronos' LLVM-SPIRV-Translator tool~\mycite{llvm-spirv}.
 
 Most of the compilation-related changes have been upstreamed to the LLVM project and very little compilation-related functionality remains within the \chipstar code base. The notable exceptions are compiler passes that handle CUDA vs. OpenCL differences in \func{printf()}, implement a device side \func{abort()} feature, handling of CUDA's device-side global variables, and an indirect memory access analyzer. The indirect memory access analyzer marks kernels that are known to not indirectly access allocations, which removes  unnecessary synchronizations for the majority of
 benchmarks seen so far. Otherwise, due to CUDA's memory model, each launcher kernel can potentially access any previously allocated buffer, inducing significant unnecessary
@@ -663,19 +676,19 @@ The GPU also has a native workgroup size of only 32 (subgroup size 16), while mo
 \label{section:applications}
 
 In order to further test \chipstar in practice, we ported a
-complex HIP/CUDA-based HPC application and its dependency library using \chipstar. The test environment for the experiment was the Aurora supercomputer utilizing Intel Datacenter Intel® Data Center GPU Max Series (referred to from here on as PVCs, as in Ponte Vecchio) as the accelerator part\endnote{\url{https://www.alcf.anl.gov/aurora}}.
+complex HIP/CUDA-based HPC application and its dependency library using \chipstar. The test environment for the experiment was the Aurora supercomputer utilizing Intel Datacenter Intel® Data Center GPU Max Series (referred to from here on as PVCs, as in Ponte Vecchio) as the accelerator part\myendnote{\url{https://www.alcf.anl.gov/aurora}}.
 
 \subsection{GAMESS-GPU-HF}
 
 General Atomic and Molecular Electronic Structure System (GAMESS~\mycite{gamess,gamess2}) is a quantum chemistry software package which implements many electronic structure methods. 
-The code base is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods were implemented in CUDA which scales to 4096 nodes on Summit\endnote{\url{https://www.olcf.ornl.gov/olcf-resources/compute-systems/summit/}}, an Nvidia V100-based supercomputer~\mycite{gamess_cuda1, gamess_cuda2}.
+The code base is primarily in Fortran 77/90 with some C/C++ and a CUDA library. Recently a new GPU version of the Hartree-Fock (HF) and RI-MP2 methods were implemented in CUDA which scales to 4096 nodes on Summit\myendnote{\url{https://www.olcf.ornl.gov/olcf-resources/compute-systems/summit/}}, an Nvidia V100-based supercomputer~\mycite{gamess_cuda1, gamess_cuda2}.
 In this porting case we focused on the Hartee-Fock (HF) algorithm used by a CUDA library in GAMESS described in~\mycite{gamess_cuda1}, which has been ported to HIP. The HF method is a common quantum chemistry method which is often the starting point for other higher-accuracy methods.
 
 The HF method primarily involves the computation of $N^4$ two electron integrals (where $N$ is a measure of molecular system size) as well as matrix contractions of the two electron integrals once they are formed, and computation of eigenvectors.
 
 The two electron integrals are implemented as HIP/CUDA kernels which were optimized for Nvidia GPUs. The kernels total over 20,000 lines of HIP/CUDA  code. The matrix contractions and eigensolves are done on the GPU via calls to the HIP math libraries hipBLAS and hipSOLVER.
 
-Since the application uses ROCm software platform libraries hipBLAS and hipSOLVER, they needed to be ported as well. The required interfaces of these libraries were implemented for Intel hardware by using Intel oneMKL as a backend. This is done with two layers: first, a shim library, H4I-MKLShim\endnote{\url{https://github.com/CHIP-SPV/H4I-MKLShim}}, which provides shims for the SYCL-based oneMKL functions. This is designed to be used by other libraries which wish to call the oneMKL functions from a different API, such as hipBLAS, to use Intel GPUs. The chipStar project currently implements hipBLAS, hipSOLVER, and hipFFT in the libraries H4I-HipBLAS\endnote{\url{https://github.com/CHIP-SPV/H4I-HipBLAS}}, H4I-HipSOLVER\endnote{\url{https://github.com/CHIP-SPV/H4I-HipSOLVER}}, and H4I-HipFFT\endnote{\url{https://github.com/CHIP-SPV/H4I-HipFFT}}, respectively. These allow calls to hipBLAS, hipSOLVER, and hipFFT functions to run on Intel GPUs.
+Since the application uses ROCm software platform libraries hipBLAS and hipSOLVER, they needed to be ported as well. The required interfaces of these libraries were implemented for Intel hardware by using Intel oneMKL as a backend. This is done with two layers: first, a shim library, H4I-MKLShim\myendnote{\url{https://github.com/CHIP-SPV/H4I-MKLShim}}, which provides shims for the SYCL-based oneMKL functions. This is designed to be used by other libraries which wish to call the oneMKL functions from a different API, such as hipBLAS, to use Intel GPUs. The chipStar project currently implements hipBLAS, hipSOLVER, and hipFFT in the libraries H4I-HipBLAS\myendnote{\url{https://github.com/CHIP-SPV/H4I-HipBLAS}}, H4I-HipSOLVER\myendnote{\url{https://github.com/CHIP-SPV/H4I-HipSOLVER}}, and H4I-HipFFT\myendnote{\url{https://github.com/CHIP-SPV/H4I-HipFFT}}, respectively. These allow calls to hipBLAS, hipSOLVER, and hipFFT functions to run on Intel GPUs.
 
 In terms of functionality, the HF code compiles and was verified to run correctly with \chipstar on PVCs. The porting effort was relatively low, with one exception due to a small but significant specification difference in CUDA vs. OpenCL related to kernel thread synchronization: In CUDA group barriers are not counting in exited threads, meaning that there can be early returns from the kernel by a subset of the threads after which it is still legal to perform barrier synchronization with the remaining subset -- the exited threads are just not counted in. In OpenCL this case is undefined behavior and in many implementations can lead to a deadlock. To tackle this gap, an OpenCL extension adding a group barrier with similar semantics would be needed (see \textit{cl\_ext\_alive\_only\_barrier} in Table~\ref{table:extensions}).
 
@@ -766,6 +779,7 @@ Tampere University authors' contributions were in part funded via the DARE SGA1 
 
 \end{acks}
 
+\setcounter{notelabelcount}{0}
 \theendnotes
 
 \bibliographystyle{SageH}
