@@ -47,34 +47,40 @@ series = {IWOCL '20}
 }
 
 @misc{clang, 
+       year = {n.d.},
    title={{Clang Compiler}}, 
-   note={\url{http://clang.llvm.org/}},
+   howpublished={\url{http://clang.llvm.org/}}
 }
 
 % ~\https://docs.imgtec.com/performance-guides/compute-recommendations/html/topics/introduction/introduction.html}.  
 @misc{PowerVRPerfGuide,
+    year = {2023},
+    author = {{Imagination Technologies Limited}},
     title={{Introduction to the PowerVR Compute Development Recommendations}},
-    note={\url{https://docs.imgtec.com/performance-guides/compute-recommendations/html/topics/introduction/introduction.html}}
+    howpublished={\url{https://docs.imgtec.com/performance-guides/compute-recommendations/html/topics/introduction/introduction.html}}
 }
 
 @misc{ROCm,
-   author={{Advanced Micro Devices, Inc}},
+   author={{AMD, Inc}},
    title={{ROCm} documentation - release 4.5.0},
    month={March},
    day={31},
    year={2023},
-   note= {\url{https://rocmdocs.amd.com/_/downloads/en/latest/pdf/}},
+   howpublished= {\url{https://rocmdocs.amd.com/_/downloads/en/latest/pdf/}}
 }
 
 @misc{hip, 
-   title={{Heterogeneous compute Interface for Portability (HIP) Programming Guide v5.3}}, 
-   note={\url{https://docs.amd.com/bundle/HIP-Programming-Guide-v5.3} (accessed Apr. 5, 2023)},
+   year = {2025},
+   author = {{AMD, Inc.}},
+   title={{HIP documentation}}, 
+   howpublished={\url{https://rocm.docs.amd.com/projects/HIP/en/latest/index.html}}
 }
 
 @misc{l0, 
+   year = {2025},
    author={{Intel Corporation}},
-   title={oneAPI Level Zero Specification Documentation}, 
-   note={\url{http://spec.oneapi.io/level-zero/latest/index.html} (accessed Apr. 5, 2023)},
+   title={oneAPI Level Zero: 1.15.31}, 
+   howpublished={\url{https://oneapi-src.github.io/level-zero-spec/level-zero/latest/index.html#}}
 }
 
 @inproceedings{CUDAonCL,
@@ -95,53 +101,69 @@ series = {IWOCL 2017}
 }
 
 @misc{cuda, 
+       year = {n.d.},
    title={{Nvidia CUDA Toolkit}}, 
-   note={\url{https://developer.nvidia.com/cuda-toolkit}},
+   howpublished={\url{https://developer.nvidia.com/cuda-toolkit}},
 }
 
 @misc{intel-usm,
+    year = {2026},
+    author = {{Intel Corporation}},
     title={{Unified Shared Memory}},
-    note={\url{https://registry.khronos.org/OpenCL/extensions/intel/cl_intel_unified_shared_memory.html}}
+    howpublished={\url{https://registry.khronos.org/OpenCL/extensions/intel/cl_intel_unified_shared_memory.html}},
 }
 
 @misc{llvm-spirv,
-    title = {{SPIR-V Translation Tool}},
+    author={{The Khronos\textsuperscript{\textregistered} Group Inc}},
+    year = {2019},
+    title = {{LLVM/SPIR-V Bi-Directional Translator}},
     note = {\url{https://github.com/KhronosGroup/SPIRV-LLVM-Translator}},
 }
 
-@misc{intel-buffer,
-    title={{Device Buffer Address}},
-    note={\url{https://github.com/KhronosGroup/OpenCL-Docs/pull/1159}}
+@misc{buffer-device-address,
+    year = {2025},
+    author={{Khronos\textsuperscript{\textregistered} OpenCL Working Group}},
+    title={{Buffer Device Address}},
+    howpublished={\url{https://registry.khronos.org/OpenCL/sdk/3.0/docs/man/html/cl_ext_buffer_device_address.html}},
 }
 
 @misc{intel-fp-fast,
+    year = {2023},
+    author = {{Intel Corporation}},
     title = {{Intel Floating Point Model}},
-    note = {\url{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-1/fp-model-fp.html}}
+    howpublished = {\url{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-1/fp-model-fp.html}},
 }
 
 @misc{cuda-fast-math,
+       year = {2026},
+    author = {{NVIDIA Corporation}},
     title = {{CUDA NVCC Fast Math}},
-    note = {\url{https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/}}
+    howpublished = {\url{https://docs.nvidia.com/cuda/pdf/CUDA_Compiler_Driver_NVCC.pdf}}
 }
 
 @misc{cuda-lockstep,
+    author = {{NVIDIA Corporation}},
+    year = {2018},
     title = {CUDA Independent Thread Scheduling}, key = {cuda-lockstep},
-    note ={\url{https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/?utm_source=chatgpt.com#independent-thread-scheduling-7-x}},
+    howpublished ={\url{https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/?utm_source=chatgpt.com#independent-thread-scheduling-7-x}}
 }
     
 @misc{HSAIL,
+   year = {2018},
    author={{Heterogeneous System Architecture Foundation}},
    title={{HSA Programmer's Reference Manual: HSAIL Virtual ISA and Programming Model, Compiler Writer, and Object Format (BRIG)}},
    note={\url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-PRM-1.2.pdf} (accessed Apr. 12, 2023)},
 }
 
 @misc{HSA,
+   year = {2021},
    author={{Heterogeneous System Architecture Foundation}},
    title={{HSA} Platform System Architecture Specification},
    note={\url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-SysArch-1.2.pdf} (accessed Apr. 13, 2023)},
 }
 
 @misc{HSART,
+   year = {2016},
    author={{Heterogeneous System Architecture Foundation}},
    title={{HSA} Runtime Programmer's Reference Manual v1.1.1},
    note={\url{http://hsafoundation.com/wp-content/uploads/2021/02/HSA-Runtime-1.1.1.pdf} (accessed Apr. 13, 2023)},
@@ -176,21 +198,26 @@ keywords = {control dependence, dominator, def-use chain, control flow graph, op
 }
 
 @misc{openacc,
+       year = {n.d.},
    title={{OpenACC}}, 
    note={\url{https://www.openacc.org/}},
 }
 
 @misc{SYCL,
-   author={{The Khronos\textsuperscript{\textregistered} SYCL\texttrademark ~Working Group}},
-   title={{SYCL\texttrademark ~2020 Specification}}, 
-   note={\url{https://www.khronos.org/sycl/} (accessed Apr. 4, 2023)}
+   year = {2014},
+   author={{The Khronos\textsuperscript{\textregistered} Group Inc}},
+   title={{Khronos Releases SYCL 1.2 Provisional Specification}}, 
+   howpublished={\url{https://www.khronos.org/news/press/khronos-releases-sycl-1.2-provisional-specification}},
+   note={(accessed Apr. 4, 2023)}
 }
 % extcopyright
 
 @misc{SYCLomatic,
-  author={{Intel Corporation and contributors}},
-  title={{SYCLomatic}},
-  note={{\url{https://github.com/oneapi-src/SYCLomatic} (accessed Apr. 4, 2023)}}
+  year = {2021},
+  author={{Intel Corporation}},
+  title={{SYCLomatic: A New CUDA*-to-SYCL* Code Migration Tool}},
+  howpublished={\url{https://www.intel.com/content/www/us/en/developer/articles/technical/syclomatic-new-cuda-to-sycl-code-migration-tool.html}},
+  note={(accessed Feb. 3, 2026)}}
 }
 
 @misc{SPIR2,
@@ -215,6 +242,7 @@ keywords = {control dependence, dominator, def-use chain, control flow graph, op
 }
 
 @misc{JavaSupreme,
+       year = {n.d.},
   author={{Supreme Court of the United States}},
   title={{GOOGLE LLC v. ORACLE AMERICA, INC.
 CERTIORARI TO THE UNITED STATES COURT OF APPEALS FOR
@@ -223,41 +251,51 @@ THE FEDERAL CIRCUIT. No. 18–956. Argued October 7, 2020—Decided April 5, 202
 }
 
 @misc{tf,
+       year = {n.d.},
    title={{TensorFlow}}, 
    note={\url{https://www.tensorflow.org/}},
 }
 
 @misc{pytorch,
+       year = {n.d.},
    title={{PyTorch}},
    note={\url{https://pytorch.org/}},
 }
 
 @misc{onemkl,
+       year = {n.d.},
    title={{oneMKL}},
    note={\url{https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html}}
 }
 
 @misc{dpc,
+       year = {n.d.},
    title={{DPC++}},
    note={\url{https://www.intel.com/content/www/us/en/developer/tools/oneapi/data-parallel-c-plus-plus.html}}
 }
 
 @misc{oneapi, 
+       year = {n.d.},
    title={{Intel oneAPI}}, 
    note={\url{https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html}}
 }
 
 @misc{ptx,
-    title = {{P}arallel {T}hread {E}xecution ({PTX}) and {ISA}},
+    author = {{NVIDIA Corporation}},
+    year = {2026},
+    title = {Parallel Thread Execution ISA Version 9.1},
     note = {\url{https://docs.nvidia.com/cuda/parallel-thread-execution/}}
 }
 
 @misc{ZLUDA,
-    title = {{ZLUDA: CUDA on Intel GPUs}},
+       year = {2020},
+       author = {Andrzej Janik},
+    title = {{ZLUDA: CUDA on non-NVIDIA GPUs}},
     note = {\url{https://github.com/vosen/ZLUDA}}
 }
 
 @misc{intel_openmp,
+       year = {n.d.},
     title = {{Intel® oneAPI DPC/C++ Compiler and Intel® Fortran Compiler
 }},
     note = {\url{https://www.intel.com/content/www/us/en/develop/documentation/get-started-with-cpp-fortran-compiler-openmp/top.html}},
@@ -410,6 +448,7 @@ month = {nov}
 
 @misc{summit,
   title = "{Summit User Guide}",
+       year = {n.d.},
   howpublished = "\url{https://docs.olcf.ornl.gov/systems/summit\_user\_guide.html}"
 }
 
@@ -454,36 +493,44 @@ author = "Mark S. Gordon and Michael W. Schmidt"
 
 
 @misc{OpenCL,
-    title={{The OpenCL\texttrademark{} Specification}},
-    author={{Khronos\textregistered{} OpenCL Working Group}},
+    year={2025},
+    title={{The OpenCL\textsuperscript{\textregistered} Specification}},
+    author={{Khronos\textsuperscript{\textregistered} OpenCL Working Group}},
     howpublished={\url{https://www.khronos.org/registry/OpenCL/specs/3.0-unified/pdf/OpenCL\_API.pdf}},
-    note={date accessed: \today},
 }
 
 @misc{imf-website,
+    year = {2024},
+    author = {{Intel Corporation}},
     title = {IMF Device Library},
-    url = {https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2024-2/imf-device-library.html},
+    howpublished = {\url{https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2024-2/imf-device-library.html}}
 }
 
 @misc{hip-ulp,
+       year = {2025},
+    author = {{AMD, Inc.}},
     title = {HIP Math Function Precision Guarantees},
-    url = {https://rocm.docs.amd.com/projects/HIP/en/latest/reference/math_api.html},
+    howpublished = {\url{https://rocm.docs.amd.com/projects/HIP/en/latest/reference/math_api.html}},
 }
 
 @misc{cuda-ulp,
+    year = {2018},
+    author = {{NVIDIA Corporation}},
     title = {CUDA Math Function Precision Guarantees},
-    url = {https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/index.html#mathematical-functions-appendix},
+    howpublished = {\url{https://docs.nvidia.com/cuda/archive/9.0/cuda-c-programming-guide/index.html#mathematical-functions-appendix}}
 }
 
 @misc{opencl-ulp,
+    author = {{Khronos\textsuperscript{\textregistered} OpenCL Working Group}},
+       year = {2025},
     title = {OpenCL Math Function Precision Guarantees},
-    url = {https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html#relative-error-as-ulps},
+    howpublished = {\url{https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html#relative-error-as-ulps}}
 }
 
 
 @misc{mi250-spec,
        title =  {AMD Instinct™ MI250 Accelerators},
-       url =    {https://www.amd.com/en/products/accelerators/instinct/mi200/mi250.html},
+       year = {n.d.},
        howpublished = {\url{https://www.amd.com/en/products/accelerators/instinct/mi200/mi250.html}},
 }
 
@@ -507,8 +554,8 @@ author = "Mark S. Gordon and Michael W. Schmidt"
 
 @misc{syevd-doc,
        title =  {{oneMKL - Data Parallel C++ Developer Reference}},
-       url =    {https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-dpcpp/2025-0/syevd-usm-version.html},
-       howpublished = {\url{https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-dpcpp/2025-0/syevd-usm-version.html}},
+       year = {n.d.},
+       howpublished = {\url{https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-dpcpp/2025-0/syevd-usm-version.html}}
 }
 
 @inproceedings{applencourt2024ponte,
@@ -521,35 +568,34 @@ author = "Mark S. Gordon and Michael W. Schmidt"
 
 
 @misc{mkl_shim,
+       year = {n.d.},
        title =  {{H4I-MKLShim}},
-       url =    {https://github.com/CHIP-SPV/H4I-MKLShim},
        howpublished = {\url{https://github.com/CHIP-SPV/H4I-MKLShim}},
 }
 
 
-@misc{chipBLAS,
+@electronic{chipBLAS,
+       year = {n.d.},
        title =  {{H4I-HipBLAS}},
-       url =    {https://github.com/CHIP-SPV/H4I-HipBLAS},
-       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipBLAS}},
+       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipBLAS}}
 }
 
 
 @misc{chipSOLVER,
+       year = {n.d.},
        title =  {{H4I-HipSOLVER}},
-       url =    {https://github.com/CHIP-SPV/H4I-HipSOLVER},
        howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipSOLVER}},
 }
 
-
-
 @misc{chipFFT,
+       year = {n.d.},
        title =  {{H4I-HipFFT}},
-       url =    {https://github.com/CHIP-SPV/H4I-HipFFT},
-       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipFFT}},
+       howpublished = {\url{https://github.com/CHIP-SPV/H4I-HipFFT}}
 }
 
 @misc{aurora,
+       author = {{Argonne Leadership Computing Facility}},
        title =  {{A}urora},
-       url =    {https://www.alcf.anl.gov/aurora},
-       howpublished = {\url{https://www.alcf.anl.gov/aurora}},
+       year = {n.d.},
+       howpublished = {\url{https://www.alcf.anl.gov/aurora} },
 }

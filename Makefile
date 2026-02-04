@@ -21,4 +21,5 @@ clean:
 		chipstar.ist \
 		chipstar.log \
 		chipstar.out \
+		chipstar.ent \
 		chipstar.pdf
